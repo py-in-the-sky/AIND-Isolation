@@ -1,4 +1,10 @@
-"""This file contains all the classes you must complete for this project.
+"""
+TODO: Optimizations
+    * Represent board as bit array (i.e., integer) where square (0, 0) is the
+      least significant bit, and a 1 represents an unavailable square.
+    * Iterative deepening: keep going until 50ms left.
+
+This file contains all the classes you must complete for this project.
 
 You can use the test cases in agent_test.py to help during development, and
 augment the test suite with your own test cases to further test your code.
@@ -7,6 +13,9 @@ You must test your agent's strength against a set of agents with known
 relative strength using tournament.py and include the results in your report.
 """
 import random
+
+
+### Utils
 
 
 class Timeout(Exception):
@@ -36,9 +45,23 @@ def custom_score(game, player):
     float
         The heuristic value of the current game state to the specified player.
     """
+    return 1.  # TODO
 
-    # TODO: finish this function!
-    raise NotImplementedError
+
+# def minimax_decision(game, legal_moves, depth):
+#     _min_val = lambda move: minimax_min_val(game_state(game, move), depth-1)
+#     return max(legal_moves, key=_min_val)
+
+
+# def minimax_min_val(game, depth):
+
+
+# def game_state(game, move):
+#     assert move in game.get_legal_moves()
+#     return game.forecast_move(move)
+
+
+### My Game Agent
 
 
 class CustomPlayer:
@@ -129,14 +152,14 @@ class CustomPlayer:
             # here in order to avoid timeout. The try/except block will
             # automatically catch the exception raised by the search method
             # when the timer gets close to expiring
-            pass
+            _, best_move = self.minimax(game, self.search_depth)
 
         except Timeout:
             # Handle any actions required at timeout, if necessary
             pass
 
         # Return the best move from the last completed search iteration
-        raise NotImplementedError
+        return best_move
 
     def minimax(self, game, depth, maximizing_player=True):
         """Implement the minimax search algorithm as described in the lectures.
@@ -169,11 +192,23 @@ class CustomPlayer:
                 to pass the project unit tests; you cannot call any other
                 evaluation function directly.
         """
+        # Pseudocode: https://github.com/aimacode/aima-pseudocode/blob/master/md/Minimax-Decision.md
         if self.time_left() < self.TIMER_THRESHOLD:
             raise Timeout()
 
-        # TODO: finish this function!
-        raise NotImplementedError
+        if game.is_winner(self):
+            # return float('inf'), (-1, -1)
+            return self.score(game, game.active_player), (-1, -1)
+        elif game.is_loser(self):
+            # return -float('inf'), (-1, -1)
+            return self.score(game, game.active_player), (-1, -1)
+        elif depth == 0:
+            return self.score(game, game.active_player), (-1, -1)
+        else:
+            opt_fn = max if maximizing_player else min
+            d, m_player = depth-1, not maximizing_player
+            return opt_fn(((self.minimax(game.forecast_move(m), d, m_player)[0], m)
+                          for m in game.get_legal_moves()), key=lambda pair: pair[0])
 
     def alphabeta(self, game, depth, alpha=float("-inf"), beta=float("inf"), maximizing_player=True):
         """Implement minimax search with alpha-beta pruning as described in the
