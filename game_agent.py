@@ -152,8 +152,22 @@ class CustomPlayer:
             # here in order to avoid timeout. The try/except block will
             # automatically catch the exception raised by the search method
             # when the timer gets close to expiring
-            _, best_move = self.minimax(game, self.search_depth)
-
+            if self.method == 'minimax':
+                if self.iterative:
+                    d = 0
+                    while True:
+                        _, best_move = self.minimax(game, d)
+                        d += 1
+                else:
+                    _, best_move = self.minimax(game, self.search_depth)
+            else:
+                if self.iterative:
+                    d = 0
+                    while True:
+                        _, best_move = self.alphabeta(game, d)
+                        d += 1
+                else:
+                    _, best_move = self.alphabeta(game, self.search_depth)
         except Timeout:
             # Handle any actions required at timeout, if necessary
             pass
@@ -198,12 +212,15 @@ class CustomPlayer:
 
         if game.is_winner(self):
             # return float('inf'), (-1, -1)
-            return self.score(game, game.active_player), (-1, -1)
+            # return self.score(game, game.active_player), (-1, -1)
+            return self.score(game, self), (-1, -1)
         elif game.is_loser(self):
             # return -float('inf'), (-1, -1)
-            return self.score(game, game.active_player), (-1, -1)
+            # return self.score(game, game.active_player), (-1, -1)
+            return self.score(game, self), (-1, -1)
         elif depth == 0:
-            return self.score(game, game.active_player), (-1, -1)
+            # return self.score(game, game.active_player), (-1, -1)
+            return self.score(game, self), (-1, -1)
         else:
             opt_fn = max if maximizing_player else min
             d, m_player = depth-1, not maximizing_player
@@ -251,5 +268,44 @@ class CustomPlayer:
         if self.time_left() < self.TIMER_THRESHOLD:
             raise Timeout()
 
-        # TODO: finish this function!
-        raise NotImplementedError
+        if game.is_winner(self):
+            # return float('inf'), (-1, -1)
+            # return self.score(game, game.active_player), (-1, -1)
+            return self.score(game, self), (-1, -1)
+        elif game.is_loser(self):
+            # return -float('inf'), (-1, -1)
+            # return self.score(game, game.active_player), (-1, -1)
+            return self.score(game, self), (-1, -1)
+        elif depth == 0:
+            # return self.score(game, game.active_player), (-1, -1)
+            return self.score(game, self), (-1, -1)
+        elif maximizing_player:
+            val = float('-inf')
+            best_move = (-1, -1)
+
+            for m in game.get_legal_moves():
+                v = max(val, self.alphabeta(game.forecast_move(m), depth-1, alpha, beta, not maximizing_player)[0])
+                best_move = best_move if v == val else m
+                val = v
+
+                if val >= beta:
+                    return (val, best_move)
+
+                alpha = max(alpha, val)
+
+            return (val, best_move)
+        else:
+            val = float('inf')
+            best_move = (-1, -1)
+
+            for m in game.get_legal_moves():
+                v = min(val, self.alphabeta(game.forecast_move(m), depth-1, alpha, beta, not maximizing_player)[0])
+                best_move = best_move if v == val else m
+                val = v
+
+                if val <= alpha:
+                    return (val, best_move)
+
+                beta = min(beta, val)
+
+            return (val, best_move)
