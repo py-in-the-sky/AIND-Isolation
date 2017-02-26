@@ -97,6 +97,11 @@ def play_match(player1, player2):
                 num_invalid_moves[player1] += 1
 
     if sum(num_timeouts.values()) != 0:
+        # for p in (player1, player2):
+            # if hasattr(p, '_is_Student') and p._is_Student and num_timeouts[p] > 0:
+            #     print('Student Timeouts:', num_timeouts[p])
+            # elif (not hasattr(p, '_is_Student') or not p._is_Student) and num_timeouts[p] > 0:
+            #     print('Other Timeouts:', num_timeouts[p])
         warnings.warn(TIMEOUT_WARNING)
 
     return num_wins[player1], num_wins[player2]
@@ -154,14 +159,23 @@ def main():
     ab_agents = [Agent(CustomPlayer(score_fn=h, **AB_ARGS),
                        "AB_" + name) for name, h in HEURISTICS]
     random_agents = [Agent(RandomPlayer(), "Random")]
+    student_agents = [Agent(CustomPlayer(score_fn=custom_score, **CUSTOM_ARGS), "Student_2"),
+                      Agent(CustomPlayer(score_fn=custom_score, use_rollouts=True, **CUSTOM_ARGS), "StudentRollouts_2"),
+                      # Agent(CustomPlayer(score_fn=custom_score, use_rollouts=True, use_symmetries=True, symmetry_threshold=3, try_reflection=True, **CUSTOM_ARGS), "SuperStudent_2")
+                      ]
+    id_improved_agents = [Agent(CustomPlayer(score_fn=improved_score, **CUSTOM_ARGS), "ID_Improved_2")]
 
     # ID_Improved agent is used for comparison to the performance of the
     # submitted agent for calibration on the performance across different
     # systems; i.e., the performance of the student agent is considered
     # relative to the performance of the ID_Improved agent to account for
     # faster or slower computers.
-    test_agents = [Agent(CustomPlayer(score_fn=improved_score, **CUSTOM_ARGS), "ID_Improved"),
-                   Agent(CustomPlayer(score_fn=custom_score, **CUSTOM_ARGS), "Student")]
+    test_agents = [
+                   Agent(CustomPlayer(score_fn=improved_score, **CUSTOM_ARGS), "ID_Improved"),
+                   Agent(CustomPlayer(score_fn=custom_score, **CUSTOM_ARGS), "Student"),
+                   Agent(CustomPlayer(score_fn=custom_score, use_rollouts=True, **CUSTOM_ARGS), "StudentRollouts"),
+                   # Agent(CustomPlayer(score_fn=custom_score, use_rollouts=True, use_symmetries=True, try_reflection=True, **CUSTOM_ARGS), "SuperStudent"),
+                   ]
 
     print(DESCRIPTION)
     for agentUT in test_agents:
@@ -171,11 +185,15 @@ def main():
         print("*************************")
 
         agents = random_agents + mm_agents + ab_agents + [agentUT]
+        # agents = id_improved_agents + student_agents + [agentUT]
         win_ratio = play_round(agents, NUM_MATCHES)
 
         print("\n\nResults:")
         print("----------")
         print("{!s:<15}{:>10.2f}%".format(agentUT.name, win_ratio))
+
+        if hasattr(agentUT.player, 'show_stats'):
+            agentUT.player.show_stats()
 
 
 if __name__ == "__main__":

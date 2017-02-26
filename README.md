@@ -1,6 +1,35 @@
 
 # Build a Game-playing Agent
 
+## Personalization
+
+### Data-driven Design
+
+I instrumented my player with various statistics-gathering data structures in order to help inform my choices about choosing heuristics, using board symmetries to prune the game tree, and using Monte Carlo rollouts to help evaluate nodes in the game tree. I have now commented out the statistics-gathering code so that it does not impact the performance of the player, but the commented-out code is still present in `game_agent.py` and statistics I’ve gathered and used are in `game_agent_stats.txt`.
+
+### Pure Monte Carlo Rollouts
+
+See `heuristic_analysis.pdf` for details.
+
+### Using Board Symmetries to Prune the Game Tree
+
+I implemented some utilities in `game_agent_utils/symmetry.py` to allow me to take a board and find all other boards that are equivalent by reflection or rotation. Specifically, given a board, the utilities generate boards that are a 90-degree, 180-degree, and 270-degree rotation of the board, as well as boards that are a reflection around the central horizontal axis, central vertical axis, and both diagonals.
+
+And in `game_agent_utils/BoardWrapper.py`, I implemented a utility for making boards hashable and comparable by value.
+
+All together, these utilities allowed me to memoize the score attributed to a board state, which would let me prune branches of the game tree: before expanding a node in the game tree, I would first look and see if my player has already encountered an equivalent game state. If so, then I would take the memoized score instead of performing game-tree search from that node in the game tree.
+
+The statistics I gathered indicated that even with Alpha-Beta search already pruning the tree, board symmetries still allowed my player to prune a significant number of branches in the first two plies of a game tree (roughly 65% of branches from the root of the game tree and 25% of branches at ply 2).
+
+I plan on using this pruning technique in the tournament for the February cohort.
+
+### Opening Moves and Playing a “Reflection” Strategy
+
+I implemented some opening-move strategies that I plan on using in the tournament for the February cohort.
+
+If possible, my player will try to play a “reflection” strategy, where its move is always the 180-degree rotation of the opponent’s last move. The idea is that this strategy, if made possible by the opponent’s opening move, should allow my player to win the match: if my player can always perform a reflection of the opponent’s last move, then the opponent will eventually, and necessarily, be the first player who cannot make a move.
+ 
+
 ## Synopsis
 
 In this project, students will develop an adversarial search agent to play the game "Isolation".  Students only need to modify code in the `game_agent.py`, however, code is included for example player and evaluation functions for you to review and test against in the other files.
