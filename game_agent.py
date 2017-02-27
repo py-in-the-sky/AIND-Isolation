@@ -206,20 +206,14 @@ class CustomPlayer:
                 to pass the project unit tests; you cannot call any other
                 evaluation function directly.
         """
-        # Pseudocode: https://github.com/aimacode/aima-pseudocode/blob/master/md/Minimax-Decision.md
         if self.time_left() < self.TIMER_THRESHOLD:
             raise Timeout()
 
         if game.is_winner(self):
-            # return float('inf'), (-1, -1)
-            # return self.score(game, game.active_player), (-1, -1)
-            return self.score(game, self), (-1, -1)
+            return float('inf'), (-1, -1)
         elif game.is_loser(self):
-            # return -float('inf'), (-1, -1)
-            # return self.score(game, game.active_player), (-1, -1)
-            return self.score(game, self), (-1, -1)
+            return float('-inf'), (-1, -1)
         elif depth == 0:
-            # return self.score(game, game.active_player), (-1, -1)
             return self.score(game, self), (-1, -1)
         else:
             opt_fn = max if maximizing_player else min
@@ -269,15 +263,10 @@ class CustomPlayer:
             raise Timeout()
 
         if game.is_winner(self):
-            # return float('inf'), (-1, -1)
-            # return self.score(game, game.active_player), (-1, -1)
-            return self.score(game, self), (-1, -1)
+            return float('inf'), (-1, -1)
         elif game.is_loser(self):
-            # return -float('inf'), (-1, -1)
-            # return self.score(game, game.active_player), (-1, -1)
-            return self.score(game, self), (-1, -1)
+            return float('-inf'), (-1, -1)
         elif depth == 0:
-            # return self.score(game, game.active_player), (-1, -1)
             return self.score(game, self), (-1, -1)
         elif maximizing_player:
             val = float('-inf')
