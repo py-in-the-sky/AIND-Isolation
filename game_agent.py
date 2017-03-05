@@ -13,6 +13,7 @@ You must test your agent's strength against a set of agents with known
 relative strength using tournament.py and include the results in your report.
 """
 import random
+from collections import deque
 
 
 ### Utils
@@ -21,6 +22,16 @@ import random
 class Timeout(Exception):
     """Subclass base exception for code clarity."""
     pass
+
+
+DIRECTIONS = [(-2, -1), (-2, 1), (-1, -2), (-1, 2), (1, -2), (1, 2), (2, -1), (2, 1)]
+
+
+def moves(loc, available):
+    r, c = loc
+    moves = ((r+dr, c+dc) for dr,dc in DIRECTIONS)
+    valid_moves = (loc for loc in moves if loc in available)
+    return valid_moves
 
 
 def custom_score(game, player):
@@ -45,20 +56,43 @@ def custom_score(game, player):
     float
         The heuristic value of the current game state to the specified player.
     """
-    return 1.  # TODO
+    opponent = game.get_opponent(player)
+    player, opponent = (player, opponent) if player == game.active_player else (opponent, player)
+    # active_player goes first.
 
+    player_location = game.get_player_location(player)
+    opponent_location = game.get_player_location(player)
+    available = set(game.get_blank_spaces())
+    inf = float('inf')
 
-# def minimax_decision(game, legal_moves, depth):
-#     _min_val = lambda move: minimax_min_val(game_state(game, move), depth-1)
-#     return max(legal_moves, key=_min_val)
+    # BFS for player.
+    player_score = 0
+    player_visited = {}  # location: depth
+    q = deque([ (player_location, 0) ])  # (location, depth)
+    while q:
+        loc, depth = q.popleft()
+        if depth <= 3 and loc not in player_visited:
+            player_visited[loc] = depth
+            player_score += depth
+            for loc2 in moves(loc, available):
+                if loc2 not in player_visited:
+                    q.append((loc2, depth+1))
 
+    # BFS for opponent.
+    opponent_score = 0
+    opponent_visited = {}  # location: depth
+    q = deque([ (opponent_location, 0) ])
+    while q:
+        loc, depth = q.popleft()
+        if depth <= 3 and loc not in opponent_visited and depth < player_visited.get(loc, inf):
+            opponent_visited[loc] = depth
+            opponent_score += depth
+            for loc2 in moves(loc, available):
+                if loc2 not in opponent_visited:
+                    q.append((loc2, depth+1))
 
-# def minimax_min_val(game, depth):
-
-
-# def game_state(game, move):
-#     assert move in game.get_legal_moves()
-#     return game.forecast_move(move)
+    return player_score - opponent_score
+    # return 1.
 
 
 ### My Game Agent
@@ -140,6 +174,7 @@ class CustomPlayer:
         """
 
         self.time_left = time_left
+        best_move = (-1, -1)
 
         # TODO: finish this function!
 
@@ -214,7 +249,9 @@ class CustomPlayer:
         elif game.is_loser(self):
             return float('-inf'), (-1, -1)
         elif depth == 0:
-            return self.score(game, self), (-1, -1)
+            weight = 1 if self == game.active_player else -1
+            score = self.score(game, self)  # Unit test failed if I passed in active_player.
+            return (score * weight), (-1, -1)
         else:
             opt_fn = max if maximizing_player else min
             d, m_player = depth-1, not maximizing_player
@@ -267,7 +304,9 @@ class CustomPlayer:
         elif game.is_loser(self):
             return float('-inf'), (-1, -1)
         elif depth == 0:
-            return self.score(game, self), (-1, -1)
+            weight = 1 if self == game.active_player else -1
+            score = self.score(game, self)  # Unit test failed if I passed in active_player.
+            return (score * weight), (-1, -1)
         elif maximizing_player:
             val = float('-inf')
             best_move = (-1, -1)
