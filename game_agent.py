@@ -156,7 +156,8 @@ class CustomPlayer:
                     d = 0
                     while d <= n_squares:
                         self._symmetries_cache = {}
-                        _, best_move = self.minimax(game, d)
+                        self.search_depth = d
+                        _, best_move = self.minimax(game, self.search_depth)
                         d += 1
                 else:
                     _, best_move = self.minimax(game, self.search_depth)
@@ -165,7 +166,8 @@ class CustomPlayer:
                     d = 0
                     while d <= n_squares:
                         self._symmetries_cache = {}
-                        _, best_move = self.alphabeta(game, d)
+                        self.search_depth = d
+                        _, best_move = self.alphabeta(game, self.search_depth)
                         d += 1
                 else:
                     _, best_move = self.alphabeta(game, self.search_depth)
@@ -218,7 +220,7 @@ class CustomPlayer:
             score = self.score(game, self)  # Unit test failed if I passed in active_player.
             return score, (-1, -1)
 
-        symmetry_score = self._check_symmetries(game)
+        symmetry_score = self._check_symmetries(game, depth)
 
         if symmetry_score is not None:
             return symmetry_score, (-1, -1)
@@ -227,7 +229,7 @@ class CustomPlayer:
             d, m_player = depth-1, not maximizing_player
             score, move = opt_fn(((self.minimax(game.forecast_move(m), d, m_player)[0], m)
                                    for m in game.get_legal_moves()), key=lambda pair: pair[0])
-            self._cache_move(game, score)
+            self._cache_move(game, score, depth)
             return score, move
 
     def alphabeta(self, game, depth, alpha=float("-inf"), beta=float("inf"), maximizing_player=True):
@@ -279,10 +281,10 @@ class CustomPlayer:
             score = self.score(game, self)  # Unit test failed if I passed in active_player.
             return score, (-1, -1)
 
-        # symmetry_score = self._check_symmetries(game)
+        symmetry_score = self._check_symmetries(game, depth)
 
-        # if symmetry_score is not None and alpha < symmetry_score <= beta:
-        #     return symmetry_score, (-1, -1)
+        if symmetry_score is not None and alpha < symmetry_score <= beta:
+            return symmetry_score, (-1, -1)
         if maximizing_player:
             val = float('-inf')
             best_move = (-1, -1)
@@ -297,7 +299,7 @@ class CustomPlayer:
 
                 alpha = max(alpha, val)
 
-            # self._cache_move(game, val)
+            self._cache_move(game, val, depth)
             return (val, best_move)
         else:
             val = float('inf')
@@ -313,15 +315,20 @@ class CustomPlayer:
 
                 beta = min(beta, val)
 
-            # self._cache_move(game, val)
+            self._cache_move(game, val, depth)
             return (val, best_move)
 
-    def _check_symmetries(self, game):
-        if self._is_Student:
-            board_wrapper = BoardWrapper(game)
+    def _check_symmetries(self, game, depth):
+        ply = self.search_depth - depth
+
+        if self._is_Student and ply < 3:
+            board_wrapper = utils.BoardWrapper(game)
             return self._symmetries_cache.get(board_wrapper, None)
 
-    def _cache_move(self, game, score):
-        if self._is_Student:
-            for board_wrapper in board_symmetries(game):
+    def _cache_move(self, game, score, depth):
+        ply = self.search_depth - depth
+
+        if self._is_Student and ply < 3:
+            for board_wrapper in utils.board_symmetries(game):
+                import pdb; pdb.set_trace();
                 self._symmetries_cache[board_wrapper] = score

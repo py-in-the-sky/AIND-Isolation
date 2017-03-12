@@ -1,4 +1,5 @@
 from collections import deque
+from functools import reduce
 
 
 BFS_DEPTH = 5
@@ -234,7 +235,7 @@ def board_symmetries(board):
     for sf in symmetry_functions:
         new_board = board.copy()
 
-        for player,move in board.__last_player_move__.iteritems():
+        for player,move in board.__last_player_move__.items():
             if move is not board.NOT_MOVED:
                 new_board.__last_player_move__[player] = sf(move, w, h)
 
