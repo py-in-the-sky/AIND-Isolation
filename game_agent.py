@@ -1,5 +1,8 @@
 """
 TODO: Optimizations
+    * Symmetries
+    * Iterative deepening: order exploration of children based on last iteration's
+      scores for the children (suggestion from AIMA)
     * Represent board as bit array (i.e., integer) where square (0, 0) is the
       least significant bit, and a 1 represents an unavailable square.
     * Iterative deepening: keep going until 50ms left.
@@ -12,26 +15,16 @@ augment the test suite with your own test cases to further test your code.
 You must test your agent's strength against a set of agents with known
 relative strength using tournament.py and include the results in your report.
 """
+
+
+import game_agent_utils as utils
+
 import random
-from collections import deque
-
-
-### Utils
 
 
 class Timeout(Exception):
     """Subclass base exception for code clarity."""
     pass
-
-
-DIRECTIONS = [(-2, -1), (-2, 1), (-1, -2), (-1, 2), (1, -2), (1, 2), (2, -1), (2, 1)]
-
-
-def moves(loc, available):
-    r, c = loc
-    moves = ((r+dr, c+dc) for dr,dc in DIRECTIONS)
-    valid_moves = (loc for loc in moves if loc in available)
-    return valid_moves
 
 
 def custom_score(game, player):
@@ -56,46 +49,13 @@ def custom_score(game, player):
     float
         The heuristic value of the current game state to the specified player.
     """
-    opponent = game.get_opponent(player)
-    player, opponent = (player, opponent) if player == game.active_player else (opponent, player)
-    # active_player goes first.
-
-    player_location = game.get_player_location(player)
-    opponent_location = game.get_player_location(player)
-    available = set(game.get_blank_spaces())
-    inf = float('inf')
-
-    # BFS for player.
-    player_score = 0
-    player_visited = {}  # location: depth
-    q = deque([ (player_location, 0) ])  # (location, depth)
-    while q:
-        loc, depth = q.popleft()
-        if depth <= 3 and loc not in player_visited:
-            player_visited[loc] = depth
-            player_score += depth
-            for loc2 in moves(loc, available):
-                if loc2 not in player_visited:
-                    q.append((loc2, depth+1))
-
-    # BFS for opponent.
-    opponent_score = 0
-    opponent_visited = {}  # location: depth
-    q = deque([ (opponent_location, 0) ])
-    while q:
-        loc, depth = q.popleft()
-        if depth <= 3 and loc not in opponent_visited and depth < player_visited.get(loc, inf):
-            opponent_visited[loc] = depth
-            opponent_score += depth
-            for loc2 in moves(loc, available):
-                if loc2 not in opponent_visited:
-                    q.append((loc2, depth+1))
-
-    return player_score - opponent_score
-    # return 1.
-
-
-### My Game Agent
+    # Unit tests failed if I passed in active_player; they pass if I pass in self.
+    # Therefore, we pass in self and deal with whose turn it is here.
+    weight = 1 if player == game.active_player else -1
+    player = player if player == game.active_player else game.get_opponent(player)
+    return utils.bfs_open_moves_with_blocking_heuristic(game, player) * weight
+    # return utils.bfs_open_moves_heuristic(game, player) * weight
+    # return utils.bfs_max_depth_heuristic(game, player) * weight
 
 
 class CustomPlayer:
@@ -136,6 +96,8 @@ class CustomPlayer:
         self.method = method
         self.time_left = None
         self.TIMER_THRESHOLD = timeout
+        self._symmetries_cache = None
+        self._is_Student = (score_fn is custom_score)
 
     def get_move(self, game, legal_moves, time_left):
         """Search for the best move from the available legal moves and return a
@@ -175,6 +137,8 @@ class CustomPlayer:
 
         self.time_left = time_left
         best_move = (-1, -1)
+        width, height = game.width, game.height
+        n_squares = width * height
 
         # TODO: finish this function!
 
@@ -190,7 +154,8 @@ class CustomPlayer:
             if self.method == 'minimax':
                 if self.iterative:
                     d = 0
-                    while True:
+                    while d <= n_squares:
+                        self._symmetries_cache = {}
                         _, best_move = self.minimax(game, d)
                         d += 1
                 else:
@@ -198,7 +163,8 @@ class CustomPlayer:
             else:
                 if self.iterative:
                     d = 0
-                    while True:
+                    while d <= n_squares:
+                        self._symmetries_cache = {}
                         _, best_move = self.alphabeta(game, d)
                         d += 1
                 else:
@@ -249,14 +215,20 @@ class CustomPlayer:
         elif game.is_loser(self):
             return float('-inf'), (-1, -1)
         elif depth == 0:
-            weight = 1 if self == game.active_player else -1
             score = self.score(game, self)  # Unit test failed if I passed in active_player.
-            return (score * weight), (-1, -1)
+            return score, (-1, -1)
+
+        symmetry_score = self._check_symmetries(game)
+
+        if symmetry_score is not None:
+            return symmetry_score, (-1, -1)
         else:
             opt_fn = max if maximizing_player else min
             d, m_player = depth-1, not maximizing_player
-            return opt_fn(((self.minimax(game.forecast_move(m), d, m_player)[0], m)
-                          for m in game.get_legal_moves()), key=lambda pair: pair[0])
+            score, move = opt_fn(((self.minimax(game.forecast_move(m), d, m_player)[0], m)
+                                   for m in game.get_legal_moves()), key=lambda pair: pair[0])
+            self._cache_move(game, score)
+            return score, move
 
     def alphabeta(self, game, depth, alpha=float("-inf"), beta=float("inf"), maximizing_player=True):
         """Implement minimax search with alpha-beta pruning as described in the
@@ -304,10 +276,14 @@ class CustomPlayer:
         elif game.is_loser(self):
             return float('-inf'), (-1, -1)
         elif depth == 0:
-            weight = 1 if self == game.active_player else -1
             score = self.score(game, self)  # Unit test failed if I passed in active_player.
-            return (score * weight), (-1, -1)
-        elif maximizing_player:
+            return score, (-1, -1)
+
+        # symmetry_score = self._check_symmetries(game)
+
+        # if symmetry_score is not None and alpha < symmetry_score <= beta:
+        #     return symmetry_score, (-1, -1)
+        if maximizing_player:
             val = float('-inf')
             best_move = (-1, -1)
 
@@ -321,6 +297,7 @@ class CustomPlayer:
 
                 alpha = max(alpha, val)
 
+            # self._cache_move(game, val)
             return (val, best_move)
         else:
             val = float('inf')
@@ -336,4 +313,15 @@ class CustomPlayer:
 
                 beta = min(beta, val)
 
+            # self._cache_move(game, val)
             return (val, best_move)
+
+    def _check_symmetries(self, game):
+        if self._is_Student:
+            board_wrapper = BoardWrapper(game)
+            return self._symmetries_cache.get(board_wrapper, None)
+
+    def _cache_move(self, game, score):
+        if self._is_Student:
+            for board_wrapper in board_symmetries(game):
+                self._symmetries_cache[board_wrapper] = score
