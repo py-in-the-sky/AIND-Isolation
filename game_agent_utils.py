@@ -18,6 +18,10 @@ def moves(location, available):
 
 ### Heuristics.
 
+def open_moves_depth_2(game, player):
+    pass
+
+
 def bfs_max_depth_heuristic(game, player):
     def _max_depth(p):
         location = game.get_player_location(p)

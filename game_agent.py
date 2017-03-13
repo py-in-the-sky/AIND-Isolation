@@ -330,5 +330,4 @@ class CustomPlayer:
 
         if self._is_Student and ply < 3:
             for board_wrapper in utils.board_symmetries(game):
-                import pdb; pdb.set_trace();
                 self._symmetries_cache[board_wrapper] = score
