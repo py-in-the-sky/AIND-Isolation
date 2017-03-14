@@ -70,10 +70,10 @@ def play_match(player1, player2):
     games = [Board(player1, player2), Board(player2, player1)]
 
     # initialize both games with a random move and response
-    for _ in range(2):
-        move = random.choice(games[0].get_legal_moves())
-        games[0].apply_move(move)
-        games[1].apply_move(move)
+    # for _ in range(2):
+    #     move = random.choice(games[0].get_legal_moves())
+    #     games[0].apply_move(move)
+    #     games[1].apply_move(move)
 
     # play both games and tally the results
     for game in games:
@@ -173,7 +173,9 @@ def main():
         print("{:^25}".format("Evaluating: " + agentUT.name))
         print("*************************")
 
-        agents = random_agents + mm_agents + ab_agents + [agentUT]
+        # agents = random_agents + mm_agents + ab_agents + [agentUT]
+        # agents = ab_agents + [agentUT]
+        agents = random_agents + mm_agents + [agentUT]
         win_ratio = play_round(agents, NUM_MATCHES)
 
         print("\n\nResults:")
@@ -211,10 +213,12 @@ def main():
         print()
         print('Symmetry cache hits by ply:')
         for ply,hits in sorted(agentUT.player.symmetry_cache_hits.items()):
-            if sum(hits) > 0:
+            n_hits = sum(hits)
+
+            if n_hits > 0:
                 print('    Ply:', ply,
-                      'Hit ratio:', sum(hits) / len(hits),
-                      'Total hits:', sum(hits))
+                      'Hit ratio:', n_hits / len(hits),
+                      'Total hits:', n_hits)
 
 
 if __name__ == "__main__":

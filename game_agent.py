@@ -164,7 +164,7 @@ class CustomPlayer:
                     while d <= self.n_squares:
                         self._symmetries_cache = {}
                         self.search_depth = d
-                        _, best_move = self.minimax(game, self.search_depth)
+                        _, best_move = self.minimax(game, d)
                         d += 1
                 else:
                     _, best_move = self.minimax(game, self.search_depth)
@@ -174,7 +174,7 @@ class CustomPlayer:
                     while d <= self.n_squares:
                         self._symmetries_cache = {}
                         self.search_depth = d
-                        _, best_move = self.alphabeta(game, self.search_depth)
+                        _, best_move = self.alphabeta(game, d)
                         d += 1
                 else:
                     _, best_move = self.alphabeta(game, self.search_depth)
@@ -287,9 +287,11 @@ class CustomPlayer:
         self.branching_factors_by_ply[ply].append(n_legal_moves)
 
         if game.is_winner(self):
+            # print(self._is_Student, ply)
             self.game_depths.append(ply)
             return float('inf'), (-1, -1)
         elif game.is_loser(self):
+            # print(self._is_Student, ply)
             self.game_depths.append(ply)
             return float('-inf'), (-1, -1)
         elif depth == 0:
@@ -300,7 +302,7 @@ class CustomPlayer:
 
         if symmetry_score is not None and alpha < symmetry_score <= beta:
             return symmetry_score, (-1, -1)
-        if maximizing_player:
+        elif maximizing_player:
             val = float('-inf')
             best_move = (-1, -1)
 
@@ -345,7 +347,8 @@ class CustomPlayer:
 
     def _check_symmetries(self, game, depth):
         # ply = self.search_depth - depth
-        ply = self.n_squares - len(game.get_blank_spaces()) + 1
+        # ply = self.n_squares - len(game.get_blank_spaces()) + 1
+        ply = self.n_squares - len(game.get_blank_spaces())
 
         # if self._is_Student and ply < 3:
         if self._is_Student:
@@ -358,7 +361,7 @@ class CustomPlayer:
 
     def _cache_move(self, game, score, depth):
         # ply = self.search_depth - depth
-        ply = self.n_squares - len(game.get_blank_spaces()) + 1
+        # ply = self.n_squares - len(game.get_blank_spaces()) + 1
 
         # if self._is_Student and ply < 3:
         if self._is_Student:
