@@ -10,6 +10,9 @@ def moves(location, available):
     """Given a location on the board and all available (blank) spaces
     on the board, return all locations on the board that are valid moves.
     """
+    if location is None:
+        return available
+
     r, c = location
     moves = ((r+dr, c+dc) for dr,dc in KNIGHT_DIRECTIONS)
     valid_moves = (loc for loc in moves if loc in available)
