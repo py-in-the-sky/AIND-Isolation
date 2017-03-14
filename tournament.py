@@ -180,6 +180,42 @@ def main():
         print("----------")
         print("{!s:<15}{:>10.2f}%".format(agentUT.name, win_ratio))
 
+        print()
+        print('Game depth:',
+              'Avg:', sum(agentUT.player.game_depths) / len(agentUT.player.game_depths),
+              'Min:', min(agentUT.player.game_depths),
+              'Max:', max(agentUT.player.game_depths))
+
+        print()
+        print('Branching factor',
+              'Avg:', sum(agentUT.player.branching_factors) / len(agentUT.player.branching_factors),
+              'Min:', min(agentUT.player.branching_factors),
+              'Max:', max(agentUT.player.branching_factors))
+
+        print()
+        print('Branching factors by ply:')
+        for ply,branching_factors in sorted(agentUT.player.branching_factors_by_ply.items()):
+            print('    Ply:', ply,
+                  'Avg:', sum(branching_factors) / len(branching_factors),
+                  'Min:', min(branching_factors),
+                  'Max:', max(branching_factors))
+
+        print()
+        print('AB pruning by ply:')
+        for ply,pruning_counts in sorted(agentUT.player.ab_pruning_by_ply.items()):
+            print('    Ply:', ply,
+                  'Avg:', sum(pruning_counts) / len(pruning_counts),
+                  'Min:', min(pruning_counts),
+                  'Max:', max(pruning_counts))
+
+        print()
+        print('Symmetry cache hits by ply:')
+        for ply,hits in sorted(agentUT.player.symmetry_cache_hits.items()):
+            if sum(hits) > 0:
+                print('    Ply:', ply,
+                      'Hit ratio:', sum(hits) / len(hits),
+                      'Total hits:', sum(hits))
+
 
 if __name__ == "__main__":
     main()

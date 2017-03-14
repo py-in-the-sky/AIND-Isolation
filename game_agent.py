@@ -19,6 +19,7 @@ relative strength using tournament.py and include the results in your report.
 
 import game_agent_utils as utils
 
+from collections import Counter, defaultdict
 import random
 
 
@@ -98,6 +99,12 @@ class CustomPlayer:
         self.TIMER_THRESHOLD = timeout
         self._symmetries_cache = None
         self._is_Student = (score_fn is custom_score)
+        self.symmetry_cache_hits = defaultdict(list)  # ply: n_cache_hits
+        self.game_depths = []  # Ply at which winner is determined.
+        self.branching_factors = []  # Number of branches at each node.
+        self.branching_factors_by_ply = defaultdict(list)
+        self.ab_pruning_by_ply = defaultdict(list)
+        self.n_squares = 0
 
     def get_move(self, game, legal_moves, time_left):
         """Search for the best move from the available legal moves and return a
@@ -138,7 +145,7 @@ class CustomPlayer:
         self.time_left = time_left
         best_move = (-1, -1)
         width, height = game.width, game.height
-        n_squares = width * height
+        self.n_squares = width * height
 
         # TODO: finish this function!
 
@@ -154,7 +161,7 @@ class CustomPlayer:
             if self.method == 'minimax':
                 if self.iterative:
                     d = 0
-                    while d <= n_squares:
+                    while d <= self.n_squares:
                         self._symmetries_cache = {}
                         self.search_depth = d
                         _, best_move = self.minimax(game, self.search_depth)
@@ -164,7 +171,7 @@ class CustomPlayer:
             else:
                 if self.iterative:
                     d = 0
-                    while d <= n_squares:
+                    while d <= self.n_squares:
                         self._symmetries_cache = {}
                         self.search_depth = d
                         _, best_move = self.alphabeta(game, self.search_depth)
@@ -273,9 +280,17 @@ class CustomPlayer:
         if self.time_left() < self.TIMER_THRESHOLD:
             raise Timeout()
 
+        # ply = self.search_depth - depth
+        ply = self.n_squares - len(game.get_blank_spaces()) + 1
+        n_legal_moves = len(game.get_legal_moves())
+        self.branching_factors.append(n_legal_moves)
+        self.branching_factors_by_ply[ply].append(n_legal_moves)
+
         if game.is_winner(self):
+            self.game_depths.append(ply)
             return float('inf'), (-1, -1)
         elif game.is_loser(self):
+            self.game_depths.append(ply)
             return float('-inf'), (-1, -1)
         elif depth == 0:
             score = self.score(game, self)  # Unit test failed if I passed in active_player.
@@ -293,12 +308,17 @@ class CustomPlayer:
                 v = max(val, self.alphabeta(game.forecast_move(m), depth-1, alpha, beta, not maximizing_player)[0])
                 best_move = best_move if v == val else m
                 val = v
+                n_legal_moves -= 1
 
                 if val >= beta:
+                    self.ab_pruning_by_ply[ply].append(n_legal_moves)
+                    self._cache_move(game, val, depth)
                     return (val, best_move)
 
                 alpha = max(alpha, val)
 
+            assert n_legal_moves == 0
+            self.ab_pruning_by_ply[ply].append(n_legal_moves)
             self._cache_move(game, val, depth)
             return (val, best_move)
         else:
@@ -309,25 +329,38 @@ class CustomPlayer:
                 v = min(val, self.alphabeta(game.forecast_move(m), depth-1, alpha, beta, not maximizing_player)[0])
                 best_move = best_move if v == val else m
                 val = v
+                n_legal_moves -= 1
 
                 if val <= alpha:
+                    self.ab_pruning_by_ply[ply].append(n_legal_moves)
+                    self._cache_move(game, val, depth)
                     return (val, best_move)
 
                 beta = min(beta, val)
 
+            assert n_legal_moves == 0
+            self.ab_pruning_by_ply[ply].append(n_legal_moves)
             self._cache_move(game, val, depth)
             return (val, best_move)
 
     def _check_symmetries(self, game, depth):
-        ply = self.search_depth - depth
+        # ply = self.search_depth - depth
+        ply = self.n_squares - len(game.get_blank_spaces()) + 1
 
-        if self._is_Student and ply < 3:
+        # if self._is_Student and ply < 3:
+        if self._is_Student:
             board_wrapper = utils.BoardWrapper(game)
-            return self._symmetries_cache.get(board_wrapper, None)
+            score = self._symmetries_cache.get(board_wrapper, None)
+
+            self.symmetry_cache_hits[ply].append(1 if score is not None else 0)
+
+            return score
 
     def _cache_move(self, game, score, depth):
-        ply = self.search_depth - depth
+        # ply = self.search_depth - depth
+        ply = self.n_squares - len(game.get_blank_spaces()) + 1
 
-        if self._is_Student and ply < 3:
+        # if self._is_Student and ply < 3:
+        if self._is_Student:
             for board_wrapper in utils.board_symmetries(game):
                 self._symmetries_cache[board_wrapper] = score
