@@ -50,10 +50,12 @@ def custom_score(game, player):
     float
         The heuristic value of the current game state to the specified player.
     """
-    # Unit tests failed if I passed in active_player; they pass if I pass in self.
-    # Therefore, we pass in self and deal with whose turn it is here.
+    # NB: `player` is treated as the maximizing player for the game tree, not as
+    # the player with the current move.
+
     weight = 1 if player == game.active_player else -1
     player = player if player == game.active_player else game.get_opponent(player)
+
     return utils.bfs_open_moves_with_blocking_heuristic(game, player) * weight
     # return utils.bfs_open_moves_heuristic(game, player) * weight
     # return utils.bfs_max_depth_heuristic(game, player) * weight
@@ -93,7 +95,7 @@ class CustomPlayer:
                  iterative=True, method='minimax', timeout=10.):
         self.search_depth = search_depth
         self.iterative = iterative
-        self.score = score_fn
+        self.score = lambda game: score_fn(game, self)
         self.method = method
         self.time_left = None
         self.TIMER_THRESHOLD = timeout
@@ -224,7 +226,7 @@ class CustomPlayer:
         elif game.is_loser(self):
             return float('-inf'), (-1, -1)
         elif depth == 0:
-            score = self.score(game, self)  # Unit test failed if I passed in active_player.
+            score = self.score(game)
             return score, (-1, -1)
 
         symmetry_score = self._check_symmetries(game, depth)
@@ -295,7 +297,7 @@ class CustomPlayer:
             self.game_depths.append(ply)
             return float('-inf'), (-1, -1)
         elif depth == 0:
-            score = self.score(game, self)  # Unit test failed if I passed in active_player.
+            score = self.score(game)
             return score, (-1, -1)
 
         symmetry_score = self._check_symmetries(game, depth)
