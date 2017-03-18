@@ -70,10 +70,10 @@ def play_match(player1, player2):
     games = [Board(player1, player2), Board(player2, player1)]
 
     # initialize both games with a random move and response
-    # for _ in range(2):
-    #     move = random.choice(games[0].get_legal_moves())
-    #     games[0].apply_move(move)
-    #     games[1].apply_move(move)
+    for _ in range(2):
+        move = random.choice(games[0].get_legal_moves())
+        games[0].apply_move(move)
+        games[1].apply_move(move)
 
     # play both games and tally the results
     for game in games:
@@ -97,6 +97,11 @@ def play_match(player1, player2):
                 num_invalid_moves[player1] += 1
 
     if sum(num_timeouts.values()) != 0:
+        # for p in (player1, player2):
+            # if hasattr(p, '_is_Student') and p._is_Student and num_timeouts[p] > 0:
+            #     print('Student Timeouts:', num_timeouts[p])
+            # elif (not hasattr(p, '_is_Student') or not p._is_Student) and num_timeouts[p] > 0:
+            #     print('Other Timeouts:', num_timeouts[p])
         warnings.warn(TIMEOUT_WARNING)
 
     return num_wins[player1], num_wins[player2]
@@ -160,11 +165,8 @@ def main():
     # systems; i.e., the performance of the student agent is considered
     # relative to the performance of the ID_Improved agent to account for
     # faster or slower computers.
-    test_agents = [
-    # Agent(CustomPlayer(score_fn=improved_score, **CUSTOM_ARGS), "ID_Improved"),
-                   Agent(CustomPlayer(score_fn=custom_score, **CUSTOM_ARGS), "Student"),
-                   # Agent(CustomPlayer(score_fn=custom_score), "Student2")
-                   ]
+    test_agents = [Agent(CustomPlayer(score_fn=improved_score, **CUSTOM_ARGS), "ID_Improved"),
+                   Agent(CustomPlayer(score_fn=custom_score, **CUSTOM_ARGS), "Student"),]
 
     print(DESCRIPTION)
     for agentUT in test_agents:
@@ -173,52 +175,50 @@ def main():
         print("{:^25}".format("Evaluating: " + agentUT.name))
         print("*************************")
 
-        # agents = random_agents + mm_agents + ab_agents + [agentUT]
-        # agents = ab_agents + [agentUT]
-        agents = random_agents + mm_agents + [agentUT]
+        agents = random_agents + mm_agents + ab_agents + [agentUT]
         win_ratio = play_round(agents, NUM_MATCHES)
 
         print("\n\nResults:")
         print("----------")
         print("{!s:<15}{:>10.2f}%".format(agentUT.name, win_ratio))
 
-        print()
-        print('Game depth:',
-              'Avg:', sum(agentUT.player.game_depths) / len(agentUT.player.game_depths),
-              'Min:', min(agentUT.player.game_depths),
-              'Max:', max(agentUT.player.game_depths))
+        # print()
+        # print('Game depth:',
+        #       'Avg:', sum(agentUT.player.game_depths) / len(agentUT.player.game_depths),
+        #       'Min:', min(agentUT.player.game_depths),
+        #       'Max:', max(agentUT.player.game_depths))
 
-        print()
-        print('Branching factor',
-              'Avg:', sum(agentUT.player.branching_factors) / len(agentUT.player.branching_factors),
-              'Min:', min(agentUT.player.branching_factors),
-              'Max:', max(agentUT.player.branching_factors))
+        # print()
+        # print('Branching factor',
+        #       'Avg:', sum(agentUT.player.branching_factors) / len(agentUT.player.branching_factors),
+        #       'Min:', min(agentUT.player.branching_factors),
+        #       'Max:', max(agentUT.player.branching_factors))
 
-        print()
-        print('Branching factors by ply:')
-        for ply,branching_factors in sorted(agentUT.player.branching_factors_by_ply.items()):
-            print('    Ply:', ply,
-                  'Avg:', sum(branching_factors) / len(branching_factors),
-                  'Min:', min(branching_factors),
-                  'Max:', max(branching_factors))
+        # print()
+        # print('Branching factors by ply:')
+        # for ply,branching_factors in sorted(agentUT.player.branching_factors_by_ply.items()):
+        #     print('    Ply:', ply,
+        #           'Avg:', sum(branching_factors) / len(branching_factors),
+        #           'Min:', min(branching_factors),
+        #           'Max:', max(branching_factors))
 
-        print()
-        print('AB pruning by ply:')
-        for ply,pruning_counts in sorted(agentUT.player.ab_pruning_by_ply.items()):
-            print('    Ply:', ply,
-                  'Avg:', sum(pruning_counts) / len(pruning_counts),
-                  'Min:', min(pruning_counts),
-                  'Max:', max(pruning_counts))
+        # print()
+        # print('AB pruning by ply:')
+        # for ply,pruning_counts in sorted(agentUT.player.ab_pruning_by_ply.items()):
+        #     print('    Ply:', ply,
+        #           'Avg:', sum(pruning_counts) / len(pruning_counts),
+        #           'Min:', min(pruning_counts),
+        #           'Max:', max(pruning_counts))
 
-        print()
-        print('Symmetry cache hits by ply:')
-        for ply,hits in sorted(agentUT.player.symmetry_cache_hits.items()):
-            n_hits = sum(hits)
+        # print()
+        # print('Symmetry cache hits by ply:')
+        # for ply,hits in sorted(agentUT.player.symmetry_cache_hits.items()):
+        #     n_hits = sum(hits)
 
-            if n_hits > 0:
-                print('    Ply:', ply,
-                      'Hit ratio:', n_hits / len(hits),
-                      'Total hits:', n_hits)
+        #     if n_hits > 0:
+        #         print('    Ply:', ply,
+        #               'Hit ratio:', n_hits / len(hits),
+        #               'Total hits:', n_hits)
 
 
 if __name__ == "__main__":

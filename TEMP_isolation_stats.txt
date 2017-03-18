@@ -1,0 +1,411 @@
+
+ISOLATION STATS
+
+Performance: Using the interleaved_bfs_depth_n heuristice, my agent has never lost to ID_Improved and usually beats ID_Improved by 10-15 percentage points -- typically 80% to 65% on a Macbook Pro 2.5Gz i5 8GB RAM.
+
+
+Game depth: Avg: 30 Min: 7 Max: 44
+Branching factor Avg: 4 Min: 0 Max: 49
+    Ply: 1 Avg: 49
+    Ply: 2 Avg: 48
+    Plies: 3-19 Avg: 3-4
+    Plies: 20-29 Avg: 2-3
+    Plies: 30-38 Avg: 1-2
+    Plies: 39 and on Avg: 0-1
+Symmetry cache hits by ply:
+    Ply: 1 Hit ratio: 64% Total hits: 561
+    Ply: 2 Hit ratio: 28% Total hits: 209
+AB pruning by ply (average):
+    Ply 1: 0
+    Ply 2: 43
+    Plies 3-26: 0-2
+    Plies 27 and on: 0-1
+
+
+-- RAW --
+
+Game depth: Avg: 30.170161773517076 Min: 10 Max: 44
+Game depth: Avg: 30.470345345345347 Min: 8 Max: 44
+Game depth: Avg: 30.16699499924231 Min: 8 Max: 42
+Game depth: Avg: 30.130783607603593 Min: 7 Max: 43
+
+Branching factor Avg: 3.9762892022732057 Min: 0 Max: 49
+Branching factor Avg: 4.063031862260043 Min: 0 Max: 49
+Branching factor Avg: 4.4175031306570816 Min: 0 Max: 49
+Branching factor Avg: 3.357684477807574 Min: 0 Max: 49
+
+Symmetry cache hits by ply:
+    Ply: 1 Hit ratio: 0.6338983050847458 Total hits: 561
+    Ply: 2 Hit ratio: 0.330173775671406 Total hits: 209
+Symmetry cache hits by ply:
+    Ply: 1 Hit ratio: 0.6190476190476191 Total hits: 1170
+    Ply: 2 Hit ratio: 0.2746987951807229 Total hits: 342
+    Ply: 3 Hit ratio: 0.005272407732864675 Total hits: 3
+    Ply: 4 Hit ratio: 0.001713796058269066 Total hits: 2
+    Ply: 5 Hit ratio: 0.00039154267815191856 Total hits: 1
+Symmetry cache hits by ply:
+    Ply: 1 Hit ratio: 0.6256025709694697 Total hits: 1168
+    Ply: 2 Hit ratio: 0.13132694938440492 Total hits: 96
+    Ply: 3 Hit ratio: 0.024774774774774775 Total hits: 11
+    Ply: 4 Hit ratio: 0.009761388286334056 Total hits: 9
+    Ply: 5 Hit ratio: 0.0025214321734745334 Total hits: 5
+Symmetry cache hits by ply:
+    Ply: 1 Hit ratio: 0.7163375224416517 Total hits: 3591
+    Ply: 2 Hit ratio: 0.36401673640167365 Total hits: 3132
+    Ply: 3 Hit ratio: 0.03893866299104066 Total hits: 113
+    Ply: 4 Hit ratio: 0.00510204081632653 Total hits: 9
+    Ply: 5 Hit ratio: 0.0013991605036977814 Total hits: 7
+    Ply: 6 Hit ratio: 0.0011871357651629614 Total hits: 11
+    Ply: 7 Hit ratio: 0.001145475372279496 Total hits: 15
+
+Branching factors by ply:
+    Ply: 1 Avg: 49.0 Min: 49 Max: 49
+    Ply: 2 Avg: 48.0 Min: 48 Max: 48
+    Ply: 3 Avg: 2.5416760786085386 Min: 1 Max: 8
+    Ply: 4 Avg: 3.9914945321992708 Min: 2 Max: 8
+    Ply: 5 Avg: 4.737373737373737 Min: 4 Max: 5
+    Ply: 6 Avg: 3.892460549386324 Min: 2 Max: 7
+    Ply: 7 Avg: 3.5579593154665807 Min: 2 Max: 7
+    Ply: 8 Avg: 4.180523120037366 Min: 1 Max: 7
+    Ply: 9 Avg: 2.969656992084433 Min: 1 Max: 7
+    Ply: 10 Avg: 3.6197836166924264 Min: 0 Max: 7
+    Ply: 11 Avg: 4.228105323411563 Min: 0 Max: 7
+    Ply: 12 Avg: 3.24374390640234 Min: 1 Max: 7
+    Ply: 13 Avg: 3.3898894154818326 Min: 0 Max: 7
+    Ply: 14 Avg: 2.6985611510791365 Min: 1 Max: 7
+    Ply: 15 Avg: 2.9920260964117436 Min: 0 Max: 7
+    Ply: 16 Avg: 3.8581037796284434 Min: 0 Max: 7
+    Ply: 17 Avg: 3.067859346082665 Min: 0 Max: 6
+    Ply: 18 Avg: 3.979293109603713 Min: 0 Max: 7
+    Ply: 19 Avg: 3.141659439144261 Min: 0 Max: 7
+    Ply: 20 Avg: 2.7873730043541363 Min: 0 Max: 6
+    Ply: 21 Avg: 2.194418312950768 Min: 0 Max: 6
+    Ply: 22 Avg: 3.013306038894575 Min: 0 Max: 7
+    Ply: 23 Avg: 2.4534731323722148 Min: 0 Max: 5
+    Ply: 24 Avg: 3.01027397260274 Min: 0 Max: 5
+    Ply: 25 Avg: 2.2440439828955405 Min: 0 Max: 5
+    Ply: 26 Avg: 2.545859872611465 Min: 0 Max: 5
+    Ply: 27 Avg: 2.110320284697509 Min: 0 Max: 4
+    Ply: 28 Avg: 2.19611848825332 Min: 0 Max: 5
+    Ply: 29 Avg: 1.7759210026585643 Min: 0 Max: 5
+    Ply: 30 Avg: 1.8214620431115276 Min: 0 Max: 5
+    Ply: 31 Avg: 1.6187759336099585 Min: 0 Max: 5
+    Ply: 32 Avg: 1.755300859598854 Min: 0 Max: 4
+    Ply: 33 Avg: 1.4601691143747217 Min: 0 Max: 3
+    Ply: 34 Avg: 1.0595595595595595 Min: 0 Max: 4
+    Ply: 35 Avg: 1.6634036144578312 Min: 0 Max: 4
+    Ply: 36 Avg: 1.031150159744409 Min: 0 Max: 4
+    Ply: 37 Avg: 1.1431064572425829 Min: 0 Max: 3
+    Ply: 38 Avg: 1.741687979539642 Min: 0 Max: 4
+    Ply: 39 Avg: 0.4978540772532189 Min: 0 Max: 3
+    Ply: 40 Avg: 1.2 Min: 0 Max: 2
+    Ply: 41 Avg: 1.0 Min: 1 Max: 1
+    Ply: 42 Avg: 0.896551724137931 Min: 0 Max: 1
+    Ply: 43 Avg: 0.041666666666666664 Min: 0 Max: 1
+    Ply: 44 Avg: 0.0 Min: 0 Max: 0
+Branching factors by ply:
+    Ply: 1 Avg: 49.0 Min: 49 Max: 49
+    Ply: 2 Avg: 48.0 Min: 48 Max: 48
+    Ply: 3 Avg: 2.736385000510882 Min: 1 Max: 8
+    Ply: 4 Avg: 4.040141676505313 Min: 1 Max: 8
+    Ply: 5 Avg: 4.67870036101083 Min: 2 Max: 7
+    Ply: 6 Avg: 3.910217501264542 Min: 1 Max: 7
+    Ply: 7 Avg: 3.6595713871995366 Min: 1 Max: 7
+    Ply: 8 Avg: 4.23712246018671 Min: 0 Max: 7
+    Ply: 9 Avg: 3.1106755126658623 Min: 0 Max: 7
+    Ply: 10 Avg: 3.5872093023255816 Min: 0 Max: 7
+    Ply: 11 Avg: 4.109398879266429 Min: 0 Max: 7
+    Ply: 12 Avg: 3.2734758511480604 Min: 0 Max: 7
+    Ply: 13 Avg: 3.4424870466321242 Min: 0 Max: 7
+    Ply: 14 Avg: 2.78055822906641 Min: 0 Max: 7
+    Ply: 15 Avg: 3.0118215118215117 Min: 0 Max: 7
+    Ply: 16 Avg: 3.8454263565891473 Min: 0 Max: 7
+    Ply: 17 Avg: 2.94065016403221 Min: 0 Max: 7
+    Ply: 18 Avg: 3.667017359284587 Min: 0 Max: 7
+    Ply: 19 Avg: 3.1606303566491567 Min: 0 Max: 7
+    Ply: 20 Avg: 2.8698142683561882 Min: 0 Max: 7
+    Ply: 21 Avg: 2.35283608753908 Min: 0 Max: 6
+    Ply: 22 Avg: 2.9003774823568027 Min: 0 Max: 7
+    Ply: 23 Avg: 2.329439647875402 Min: 0 Max: 6
+    Ply: 24 Avg: 2.9398965962947003 Min: 0 Max: 6
+    Ply: 25 Avg: 2.3496774193548386 Min: 0 Max: 6
+    Ply: 26 Avg: 2.5818821165438712 Min: 0 Max: 5
+    Ply: 27 Avg: 2.1466724411722247 Min: 0 Max: 5
+    Ply: 28 Avg: 2.187000928505107 Min: 0 Max: 5
+    Ply: 29 Avg: 2.043581616481775 Min: 0 Max: 5
+    Ply: 30 Avg: 1.8839323467230444 Min: 0 Max: 5
+    Ply: 31 Avg: 1.5895089285714286 Min: 0 Max: 5
+    Ply: 32 Avg: 1.7778349190023142 Min: 0 Max: 5
+    Ply: 33 Avg: 1.49370012599748 Min: 0 Max: 4
+    Ply: 34 Avg: 1.1735594795539033 Min: 0 Max: 4
+    Ply: 35 Avg: 1.7870627429205996 Min: 0 Max: 5
+    Ply: 36 Avg: 0.8737388296339003 Min: 0 Max: 4
+    Ply: 37 Avg: 1.1826182618261827 Min: 0 Max: 3
+    Ply: 38 Avg: 1.078416149068323 Min: 0 Max: 4
+    Ply: 39 Avg: 0.4107806691449814 Min: 0 Max: 3
+    Ply: 40 Avg: 0.9176470588235294 Min: 0 Max: 2
+    Ply: 41 Avg: 0.9294117647058824 Min: 0 Max: 1
+    Ply: 42 Avg: 0.7164179104477612 Min: 0 Max: 1
+    Ply: 43 Avg: 0.045454545454545456 Min: 0 Max: 1
+    Ply: 44 Avg: 0.0 Min: 0 Max: 0
+Branching factors by ply:
+    Ply: 1 Avg: 49.0 Min: 49 Max: 49
+    Ply: 2 Avg: 48.0 Min: 48 Max: 48
+    Ply: 3 Avg: 2.8642710002288854 Min: 1 Max: 8
+    Ply: 4 Avg: 3.775301764159703 Min: 1 Max: 8
+    Ply: 5 Avg: 4.681957186544342 Min: 2 Max: 7
+    Ply: 6 Avg: 3.947661105659143 Min: 1 Max: 7
+    Ply: 7 Avg: 3.6355053683820806 Min: 1 Max: 7
+    Ply: 8 Avg: 4.089614161250173 Min: 0 Max: 7
+    Ply: 9 Avg: 3.2332361516034984 Min: 0 Max: 7
+    Ply: 10 Avg: 3.5410758496511368 Min: 0 Max: 7
+    Ply: 11 Avg: 3.92874109263658 Min: 0 Max: 7
+    Ply: 12 Avg: 3.230062724014337 Min: 0 Max: 7
+    Ply: 13 Avg: 3.55365141187926 Min: 0 Max: 7
+    Ply: 14 Avg: 2.7943505242884656 Min: 0 Max: 7
+    Ply: 15 Avg: 3.0049349484073575 Min: 0 Max: 7
+    Ply: 16 Avg: 3.7714516454673936 Min: 0 Max: 7
+    Ply: 17 Avg: 2.881457089936201 Min: 0 Max: 7
+    Ply: 18 Avg: 3.913802083333333 Min: 0 Max: 7
+    Ply: 19 Avg: 3.1308724832214767 Min: 0 Max: 7
+    Ply: 20 Avg: 2.8207705192629815 Min: 0 Max: 7
+    Ply: 21 Avg: 2.2579505300353357 Min: 0 Max: 7
+    Ply: 22 Avg: 2.857051144874813 Min: 0 Max: 6
+    Ply: 23 Avg: 2.1061215370866844 Min: 0 Max: 7
+    Ply: 24 Avg: 2.759400794863956 Min: 0 Max: 7
+    Ply: 25 Avg: 2.4997547817557626 Min: 0 Max: 5
+    Ply: 26 Avg: 2.6288757396449705 Min: 0 Max: 5
+    Ply: 27 Avg: 2.305591920703198 Min: 0 Max: 5
+    Ply: 28 Avg: 2.265177948360084 Min: 0 Max: 5
+    Ply: 29 Avg: 1.8842676311030742 Min: 0 Max: 5
+    Ply: 30 Avg: 1.8896429625258189 Min: 0 Max: 5
+    Ply: 31 Avg: 1.4968191457134201 Min: 0 Max: 4
+    Ply: 32 Avg: 1.6876521739130435 Min: 0 Max: 4
+    Ply: 33 Avg: 1.4557247602932881 Min: 0 Max: 3
+    Ply: 34 Avg: 1.1154814348646949 Min: 0 Max: 4
+    Ply: 35 Avg: 1.5695410292072323 Min: 0 Max: 4
+    Ply: 36 Avg: 0.6654766154944662 Min: 0 Max: 3
+    Ply: 37 Avg: 1.0214876033057851 Min: 0 Max: 2
+    Ply: 38 Avg: 1.0831295843520783 Min: 0 Max: 4
+    Ply: 39 Avg: 0.4236760124610592 Min: 0 Max: 2
+    Ply: 40 Avg: 1.0 Min: 1 Max: 1
+    Ply: 41 Avg: 0.8804347826086957 Min: 0 Max: 1
+    Ply: 42 Avg: 0.0 Min: 0 Max: 0
+Branching factors by ply:
+    Ply: 1 Avg: 49.0 Min: 49 Max: 49
+    Ply: 2 Avg: 48.0 Min: 48 Max: 48
+    Ply: 3 Avg: 3.0340376756702883 Min: 1 Max: 8
+    Ply: 4 Avg: 3.3388025716581837 Min: 1 Max: 8
+    Ply: 5 Avg: 3.9017097842628234 Min: 1 Max: 7
+    Ply: 6 Avg: 4.385416666666667 Min: 1 Max: 7
+    Ply: 7 Avg: 4.064700571772494 Min: 0 Max: 7
+    Ply: 8 Avg: 3.904175320489866 Min: 0 Max: 7
+    Ply: 9 Avg: 3.1261007607979394 Min: 0 Max: 7
+    Ply: 10 Avg: 2.956050931630634 Min: 0 Max: 7
+    Ply: 11 Avg: 3.2068824624324694 Min: 0 Max: 7
+    Ply: 12 Avg: 3.2024719216370072 Min: 0 Max: 7
+    Ply: 13 Avg: 3.403021574914407 Min: 0 Max: 7
+    Ply: 14 Avg: 3.130957095709571 Min: 0 Max: 7
+    Ply: 15 Avg: 2.782311405076868 Min: 0 Max: 7
+    Ply: 16 Avg: 2.7355822595434582 Min: 0 Max: 7
+    Ply: 17 Avg: 3.264236747437725 Min: 0 Max: 7
+    Ply: 18 Avg: 3.080251599609587 Min: 0 Max: 7
+    Ply: 19 Avg: 3.192692027276236 Min: 0 Max: 7
+    Ply: 20 Avg: 2.943213619402985 Min: 0 Max: 7
+    Ply: 21 Avg: 2.779831932773109 Min: 0 Max: 7
+    Ply: 22 Avg: 2.5569707698285913 Min: 0 Max: 7
+    Ply: 23 Avg: 2.296607869742198 Min: 0 Max: 7
+    Ply: 24 Avg: 2.4564046746104493 Min: 0 Max: 6
+    Ply: 25 Avg: 2.440134907251265 Min: 0 Max: 6
+    Ply: 26 Avg: 2.39702341869118 Min: 0 Max: 6
+    Ply: 27 Avg: 2.031716326028072 Min: 0 Max: 6
+    Ply: 28 Avg: 2.294950127944018 Min: 0 Max: 6
+    Ply: 29 Avg: 1.8237554293351153 Min: 0 Max: 5
+    Ply: 30 Avg: 1.7337274462713221 Min: 0 Max: 5
+    Ply: 31 Avg: 1.3664994425863992 Min: 0 Max: 5
+    Ply: 32 Avg: 1.7204200897772508 Min: 0 Max: 5
+    Ply: 33 Avg: 1.4649885208265006 Min: 0 Max: 5
+    Ply: 34 Avg: 1.0456968022108173 Min: 0 Max: 4
+    Ply: 35 Avg: 0.8839095744680852 Min: 0 Max: 4
+    Ply: 36 Avg: 0.8096742349457058 Min: 0 Max: 4
+    Ply: 37 Avg: 1.0012019230769231 Min: 0 Max: 3
+    Ply: 38 Avg: 0.9614277489925158 Min: 0 Max: 4
+    Ply: 39 Avg: 0.5356521739130434 Min: 0 Max: 3
+    Ply: 40 Avg: 0.8391752577319588 Min: 0 Max: 3
+    Ply: 41 Avg: 0.8256658595641646 Min: 0 Max: 2
+    Ply: 42 Avg: 0.023715415019762844 Min: 0 Max: 1
+    Ply: 43 Avg: 0.0 Min: 0 Max: 0
+
+AB pruning by ply:
+    Ply: 1 Avg: 0.0 Min: 0 Max: 0
+    Ply: 2 Avg: 43.19358533791524 Min: 0 Max: 47
+    Ply: 3 Avg: 0.7324414715719063 Min: 0 Max: 1
+    Ply: 4 Avg: 0.7075471698113207 Min: 0 Max: 2
+    Ply: 5 Avg: 1.0535279805352797 Min: 0 Max: 4
+    Ply: 6 Avg: 1.420909090909091 Min: 0 Max: 6
+    Ply: 7 Avg: 0.9262672811059908 Min: 0 Max: 6
+    Ply: 8 Avg: 1.5978494623655914 Min: 0 Max: 6
+    Ply: 9 Avg: 1.1081081081081081 Min: 0 Max: 6
+    Ply: 10 Avg: 1.2251223491027732 Min: 0 Max: 6
+    Ply: 11 Avg: 1.7207505518763797 Min: 0 Max: 5
+    Ply: 12 Avg: 1.3786816269284712 Min: 0 Max: 6
+    Ply: 13 Avg: 0.8452380952380952 Min: 0 Max: 5
+    Ply: 14 Avg: 0.8363171355498721 Min: 0 Max: 5
+    Ply: 15 Avg: 0.7902790279027903 Min: 0 Max: 6
+    Ply: 16 Avg: 1.503987240829346 Min: 0 Max: 6
+    Ply: 17 Avg: 0.8646998982706002 Min: 0 Max: 5
+    Ply: 18 Avg: 1.6094249201277955 Min: 0 Max: 5
+    Ply: 19 Avg: 1.1872427983539096 Min: 0 Max: 5
+    Ply: 20 Avg: 1.0054095826893354 Min: 0 Max: 5
+    Ply: 21 Avg: 0.5635286372613562 Min: 0 Max: 5
+    Ply: 22 Avg: 0.7246127366609294 Min: 0 Max: 6
+    Ply: 23 Avg: 0.9254267744833783 Min: 0 Max: 4
+    Ply: 24 Avg: 0.6805555555555556 Min: 0 Max: 4
+    Ply: 25 Avg: 0.4443656980864635 Min: 0 Max: 4
+    Ply: 26 Avg: 0.8253869969040247 Min: 0 Max: 4
+    Ply: 27 Avg: 0.3384146341463415 Min: 0 Max: 3
+    Ply: 28 Avg: 0.6269202633504023 Min: 0 Max: 4
+    Ply: 29 Avg: 0.4288065843621399 Min: 0 Max: 4
+    Ply: 30 Avg: 0.37568455640744797 Min: 0 Max: 4
+    Ply: 31 Avg: 0.25169491525423726 Min: 0 Max: 4
+    Ply: 32 Avg: 0.2878228782287823 Min: 0 Max: 3
+    Ply: 33 Avg: 0.3630731102850062 Min: 0 Max: 2
+    Ply: 34 Avg: 0.024549918166939442 Min: 0 Max: 2
+    Ply: 35 Avg: 0.5349282296650718 Min: 0 Max: 3
+    Ply: 36 Avg: 0.843915343915344 Min: 0 Max: 3
+    Ply: 37 Avg: 0.16045845272206305 Min: 0 Max: 2
+    Ply: 38 Avg: 1.0159574468085106 Min: 0 Max: 2
+    Ply: 39 Avg: 0.02564102564102564 Min: 0 Max: 1
+    Ply: 40 Avg: 0.8214285714285714 Min: 0 Max: 1
+    Ply: 41 Avg: 0.0 Min: 0 Max: 0
+    Ply: 42 Avg: 0.0 Min: 0 Max: 0
+    Ply: 43 Avg: 0.0 Min: 0 Max: 0
+AB pruning by ply:
+    Ply: 1 Avg: 0.0 Min: 0 Max: 0
+    Ply: 2 Avg: 43.33369041242635 Min: 0 Max: 47
+    Ply: 3 Avg: 1.5668085106382978 Min: 0 Max: 7
+    Ply: 4 Avg: 0.7796257796257796 Min: 0 Max: 6
+    Ply: 5 Avg: 1.1590909090909092 Min: 0 Max: 6
+    Ply: 6 Avg: 1.4050580431177446 Min: 0 Max: 6
+    Ply: 7 Avg: 0.9186776859504132 Min: 0 Max: 6
+    Ply: 8 Avg: 1.608781450419339 Min: 0 Max: 6
+    Ply: 9 Avg: 1.1030732860520094 Min: 0 Max: 6
+    Ply: 10 Avg: 1.2052669552669553 Min: 0 Max: 6
+    Ply: 11 Avg: 1.5126715945089757 Min: 0 Max: 6
+    Ply: 12 Avg: 1.3323097918799045 Min: 0 Max: 6
+    Ply: 13 Avg: 0.971864568431092 Min: 0 Max: 6
+    Ply: 14 Avg: 0.8303362001563722 Min: 0 Max: 6
+    Ply: 15 Avg: 0.7368421052631579 Min: 0 Max: 6
+    Ply: 16 Avg: 1.5598779557589626 Min: 0 Max: 6
+    Ply: 17 Avg: 1.0137961726746774 Min: 0 Max: 6
+    Ply: 18 Avg: 1.4893218433870363 Min: 0 Max: 6
+    Ply: 19 Avg: 1.1358395989974936 Min: 0 Max: 5
+    Ply: 20 Avg: 1.0224279102883589 Min: 0 Max: 5
+    Ply: 21 Avg: 0.6514266070814713 Min: 0 Max: 5
+    Ply: 22 Avg: 0.8115881617340559 Min: 0 Max: 6
+    Ply: 23 Avg: 0.612934362934363 Min: 0 Max: 5
+    Ply: 24 Avg: 0.7392438070404173 Min: 0 Max: 4
+    Ply: 25 Avg: 0.5269016697588126 Min: 0 Max: 4
+    Ply: 26 Avg: 0.6955770559778853 Min: 0 Max: 4
+    Ply: 27 Avg: 0.38098591549295774 Min: 0 Max: 3
+    Ply: 28 Avg: 0.5570663370416151 Min: 0 Max: 4
+    Ply: 29 Avg: 0.4826086956521739 Min: 0 Max: 4
+    Ply: 30 Avg: 0.4168607359105729 Min: 0 Max: 4
+    Ply: 31 Avg: 0.24785046728971963 Min: 0 Max: 4
+    Ply: 32 Avg: 0.32230339492909327 Min: 0 Max: 4
+    Ply: 33 Avg: 0.3639363936393639 Min: 0 Max: 3
+    Ply: 34 Avg: 0.082186065915728 Min: 0 Max: 3
+    Ply: 35 Avg: 0.6295896328293736 Min: 0 Max: 4
+    Ply: 36 Avg: 0.4393939393939394 Min: 0 Max: 3
+    Ply: 37 Avg: 0.14782608695652175 Min: 0 Max: 2
+    Ply: 38 Avg: 0.6609808102345416 Min: 0 Max: 2
+    Ply: 39 Avg: 0.014388489208633094 Min: 0 Max: 2
+    Ply: 40 Avg: 0.56 Min: 0 Max: 1
+    Ply: 41 Avg: 0.0 Min: 0 Max: 0
+    Ply: 42 Avg: 0.0 Min: 0 Max: 0
+    Ply: 43 Avg: 0.0 Min: 0 Max: 0
+AB pruning by ply:
+    Ply: 1 Avg: 0.0 Min: 0 Max: 0
+    Ply: 2 Avg: 43.68885281385281 Min: 0 Max: 47
+    Ply: 3 Avg: 2.2940298507462686 Min: 0 Max: 7
+    Ply: 4 Avg: 0.8015873015873016 Min: 0 Max: 7
+    Ply: 5 Avg: 1.16729088639201 Min: 0 Max: 6
+    Ply: 6 Avg: 1.4035275253874933 Min: 0 Max: 6
+    Ply: 7 Avg: 0.9331672893316729 Min: 0 Max: 6
+    Ply: 8 Avg: 1.5480943738656987 Min: 0 Max: 6
+    Ply: 9 Avg: 1.1602693602693603 Min: 0 Max: 6
+    Ply: 10 Avg: 1.4141461144718475 Min: 0 Max: 6
+    Ply: 11 Avg: 1.235159817351598 Min: 0 Max: 6
+    Ply: 12 Avg: 1.3636363636363635 Min: 0 Max: 6
+    Ply: 13 Avg: 1.0919023136246786 Min: 0 Max: 6
+    Ply: 14 Avg: 0.8823831535695943 Min: 0 Max: 6
+    Ply: 15 Avg: 0.573810994441013 Min: 0 Max: 6
+    Ply: 16 Avg: 1.471201588877855 Min: 0 Max: 6
+    Ply: 17 Avg: 0.7655726724715338 Min: 0 Max: 6
+    Ply: 18 Avg: 1.6370035193564605 Min: 0 Max: 6
+    Ply: 19 Avg: 1.0768765133171914 Min: 0 Max: 6
+    Ply: 20 Avg: 1.080638206123329 Min: 0 Max: 6
+    Ply: 21 Avg: 0.6380662020905923 Min: 0 Max: 5
+    Ply: 22 Avg: 0.8712541620421753 Min: 0 Max: 4
+    Ply: 23 Avg: 0.5567010309278351 Min: 0 Max: 6
+    Ply: 24 Avg: 0.7071102413568167 Min: 0 Max: 6
+    Ply: 25 Avg: 0.5827664399092971 Min: 0 Max: 4
+    Ply: 26 Avg: 0.6889185580774366 Min: 0 Max: 4
+    Ply: 27 Avg: 0.47327121137812656 Min: 0 Max: 3
+    Ply: 28 Avg: 0.6895388076490439 Min: 0 Max: 4
+    Ply: 29 Avg: 0.46153846153846156 Min: 0 Max: 4
+    Ply: 30 Avg: 0.40078585461689586 Min: 0 Max: 4
+    Ply: 31 Avg: 0.23673870333988212 Min: 0 Max: 3
+    Ply: 32 Avg: 0.2889755011135857 Min: 0 Max: 3
+    Ply: 33 Avg: 0.3462164361269325 Min: 0 Max: 2
+    Ply: 34 Avg: 0.09904868494683827 Min: 0 Max: 2
+    Ply: 35 Avg: 0.45926243567753 Min: 0 Max: 3
+    Ply: 36 Avg: 0.43966547192353644 Min: 0 Max: 2
+    Ply: 37 Avg: 0.0499359795134443 Min: 0 Max: 1
+    Ply: 38 Avg: 0.6978193146417445 Min: 0 Max: 2
+    Ply: 39 Avg: 0.0 Min: 0 Max: 0
+    Ply: 40 Avg: 0.0 Min: 0 Max: 0
+    Ply: 41 Avg: 0.0 Min: 0 Max: 0
+AB pruning by ply:
+    Ply: 1 Avg: 0.0 Min: 0 Max: 0
+    Ply: 2 Avg: 44.33542129723176 Min: 0 Max: 47
+    Ply: 3 Avg: 1.261148007590133 Min: 0 Max: 7
+    Ply: 4 Avg: 0.3472773169852146 Min: 0 Max: 7
+    Ply: 5 Avg: 1.0232558139534884 Min: 0 Max: 6
+    Ply: 6 Avg: 1.9080316271327507 Min: 0 Max: 6
+    Ply: 7 Avg: 1.2416574585635358 Min: 0 Max: 6
+    Ply: 8 Avg: 1.7406661502711076 Min: 0 Max: 6
+    Ply: 9 Avg: 1.1099241214057507 Min: 0 Max: 6
+    Ply: 10 Avg: 1.2492789451998352 Min: 0 Max: 6
+    Ply: 11 Avg: 1.0725806451612903 Min: 0 Max: 6
+    Ply: 12 Avg: 1.5174889062907857 Min: 0 Max: 6
+    Ply: 13 Avg: 1.3307302659349938 Min: 0 Max: 6
+    Ply: 14 Avg: 1.186948044500516 Min: 0 Max: 6
+    Ply: 15 Avg: 0.9732 Min: 0 Max: 6
+    Ply: 16 Avg: 0.7798013245033113 Min: 0 Max: 6
+    Ply: 17 Avg: 1.0489590811198852 Min: 0 Max: 6
+    Ply: 18 Avg: 1.0017023087562507 Min: 0 Max: 6
+    Ply: 19 Avg: 1.2190319934372436 Min: 0 Max: 5
+    Ply: 20 Avg: 0.9802581624905087 Min: 0 Max: 6
+    Ply: 21 Avg: 0.7437718756434013 Min: 0 Max: 6
+    Ply: 22 Avg: 0.8325330720235179 Min: 0 Max: 5
+    Ply: 23 Avg: 0.6461591142563634 Min: 0 Max: 6
+    Ply: 24 Avg: 0.6914355753025893 Min: 0 Max: 5
+    Ply: 25 Avg: 0.5639555714797564 Min: 0 Max: 5
+    Ply: 26 Avg: 0.6299112801013942 Min: 0 Max: 5
+    Ply: 27 Avg: 0.4184168012924071 Min: 0 Max: 4
+    Ply: 28 Avg: 0.6884927066450567 Min: 0 Max: 5
+    Ply: 29 Avg: 0.407706898272936 Min: 0 Max: 4
+    Ply: 30 Avg: 0.4652117798897102 Min: 0 Max: 3
+    Ply: 31 Avg: 0.1888530631045601 Min: 0 Max: 4
+    Ply: 32 Avg: 0.3280287474332649 Min: 0 Max: 4
+    Ply: 33 Avg: 0.3462545835515977 Min: 0 Max: 4
+    Ply: 34 Avg: 0.16864232653706338 Min: 0 Max: 3
+    Ply: 35 Avg: 0.10273052820053716 Min: 0 Max: 3
+    Ply: 36 Avg: 0.2752380952380952 Min: 0 Max: 3
+    Ply: 37 Avg: 0.10245901639344263 Min: 0 Max: 2
+    Ply: 38 Avg: 0.21084337349397592 Min: 0 Max: 3
+    Ply: 39 Avg: 0.004140786749482402 Min: 0 Max: 1
+    Ply: 40 Avg: 0.0 Min: 0 Max: 0
+    Ply: 41 Avg: 0.2885375494071146 Min: 0 Max: 1
+    Ply: 42 Avg: 0.0 Min: 0 Max: 0

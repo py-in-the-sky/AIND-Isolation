@@ -21,8 +21,47 @@ def moves(location, available):
 
 ### Heuristics.
 
-def open_moves_depth_2(game, player):
-    pass
+def open_moves_depth_n(game, player, max_depth=2):
+    def _bfs_score(p):
+        location = game.get_player_location(p)
+        visited = {}  # location: depth
+        q = deque([ (location, 0) ])  # (location, depth)
+
+        while q:
+            loc, depth = q.popleft()
+            if depth <= max_depth and loc not in visited:
+                visited[loc] = depth
+                for loc2 in moves(loc, available):
+                    if loc2 not in visited:
+                        q.append((loc2, depth+1))
+
+        return sum(visited.values())
+
+    available = set(game.get_blank_spaces())
+    return float(_bfs_score(player) - _bfs_score(game.get_opponent(player)))
+
+
+def interleaved_bfs_depth_n(game, player, max_depth=4):
+    def _bfs(pA, pI):
+        score = 0
+        locA, locI = game.get_player_location(pA), game.get_player_location(pI)
+        q = deque([(locA, 1, 0), (locI, -1, 0)])
+        visited = set()
+
+        while q:
+            loc, weight, depth = q.popleft()
+            if depth <= max_depth and loc not in visited:
+                visited.add(loc)
+                score += weight * depth
+                for loc2 in moves(loc, available):
+                    if loc2 not in visited:
+                        q.append((loc2, weight, depth+1))
+
+        return score
+
+    weight = 1 if player == game.active_player else -1
+    available = set(game.get_blank_spaces())
+    return weight * _bfs(game.active_player, game.inactive_player)
 
 
 def bfs_max_depth_heuristic(game, player):
@@ -62,45 +101,46 @@ def bfs_open_moves_heuristic(game, player, bfs_depth=BFS_DEPTH):
                     if loc2 not in visited:
                         q.append((loc2, depth+1))
 
-        return float(sum(visited.values()))
+        return sum(visited.values())
 
-    return _bfs_score(player) - _bfs_score(game.get_opponent(player))
+    return float(_bfs_score(player) - _bfs_score(game.get_opponent(player)))
 
 
 def bfs_open_moves_with_blocking_heuristic(game, player, bfs_depth=BFS_DEPTH):
-    opponent = game.get_opponent(player)
-    player_location = game.get_player_location(player)
-    opponent_location = game.get_player_location(player)
+    active_player, inactive_player = game.active_player, game.inactive_player
     available = set(game.get_blank_spaces())
     inf = float('inf')
 
-    # BFS for player.
-    player_score = 0
-    player_visited = {}  # location: depth
-    q = deque([ (player_location, 0) ])  # (location, depth)
+    # BFS for active_player (first mover).
+    active_player_score = 0
+    active_player_visited = {}  # location: depth
+    q = deque([ (game.get_player_location(active_player), 0) ])  # (location, depth)
     while q:
         loc, depth = q.popleft()
-        if depth <= bfs_depth and loc not in player_visited:
-            player_visited[loc] = depth
-            player_score += depth
+        if depth <= bfs_depth and loc not in active_player_visited:
+            active_player_visited[loc] = depth
+            active_player_score += depth
             for loc2 in moves(loc, available):
-                if loc2 not in player_visited:
+                if loc2 not in active_player_visited:
                     q.append((loc2, depth+1))
 
-    # BFS for opponent.
-    opponent_score = 0
-    opponent_visited = {}  # location: depth
-    q = deque([ (opponent_location, 0) ])
+    # BFS for inactive_player (second mover).
+    inactive_player_score = 0
+    inactive_player_visited = {}  # location: depth
+    q = deque([ (game.get_player_location(inactive_player), 0) ])
     while q:
         loc, depth = q.popleft()
-        if depth <= bfs_depth and loc not in opponent_visited and depth < player_visited.get(loc, inf):
-            opponent_visited[loc] = depth
-            opponent_score += depth
+        if depth <= bfs_depth and loc not in inactive_player_visited and depth < active_player_visited.get(loc, inf):
+            inactive_player_visited[loc] = depth
+            inactive_player_score += depth
             for loc2 in moves(loc, available):
-                if loc2 not in opponent_visited:
+                if loc2 not in inactive_player_visited:
                     q.append((loc2, depth+1))
 
-    return float(player_score - opponent_score)
+    if player is active_player:
+        return float(active_player_score - inactive_player_score)
+    else:
+        return float(inactive_player_score - active_player_score)
 
 
 ### Board Symmetries.
