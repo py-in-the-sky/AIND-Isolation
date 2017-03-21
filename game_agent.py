@@ -91,7 +91,8 @@ class CustomPlayer:
         timer expires.
     """
 
-    def __init__(self, search_depth=3, score_fn=custom_score, iterative=True, method='minimax', timeout=10.):
+    def __init__(self, search_depth=3, score_fn=custom_score, iterative=True, method='minimax',
+                 timeout=10., show_stats=False, use_symmetries=False, use_rollouts=False):
         self.search_depth = search_depth
         self.iterative = iterative
         self.score = lambda game: score_fn(game, self)
@@ -103,14 +104,20 @@ class CustomPlayer:
         self._symmetries_cache = None
         self._starting_ply = 1
         self._n_squares = 0
-        self._is_Student = (score_fn is custom_score)
+        self._use_symmetries = use_symmetries
+
+        # Monte Carlo rollouts
+        self._use_rollouts = use_rollouts
 
         # Stats
+        # self._show_stats = show_stats
         # self.symmetry_cache_hits = defaultdict(list)  # ply: n_cache_hits
         # self.game_depths = []  # Ply at which winner is determined.
         # self.branching_factors = []  # Number of branches at each node.
         # self.branching_factors_by_ply = defaultdict(list)
         # self.ab_pruning_by_ply = defaultdict(list)
+        # self.monte_carlo_scores_by_ply = defaultdict(lambda: defaultdict(int))
+        # self.scores_by_ply = defaultdict(lambda: defaultdict(int))
 
     def get_move(self, game, legal_moves, time_left):
         """Search for the best move from the available legal moves and return a
@@ -153,6 +160,10 @@ class CustomPlayer:
         self._starting_ply = self._n_squares - len(game.get_blank_spaces()) + 1
 
         best_move = (-1, -1)
+
+        # TODO: Opening book: if reflection can be played, just play that (set some flag
+        # for the game). Otherwise, just play alpha-beta. Can keep track of when current
+        # game ends and new one begins by noting new _starting_ply <= old _starting_ply.
 
         # TODO: finish this function!
 
@@ -298,7 +309,7 @@ class CustomPlayer:
             #     print('Leaf node. Starting ply:', self._starting_ply, 'Current ply:', ply)
             return float('-inf'), (-1, -1)
         elif depth == 0:
-            score = self.score(game)
+            score = self._eval(game, depth)
             return score, (-1, -1)
 
         symmetry_score = self._check_symmetries(game, depth)
@@ -349,17 +360,111 @@ class CustomPlayer:
             return (val, best_move)
 
     def _check_symmetries(self, game, depth):
+        if True:
+            return None
+
         ply = self._starting_ply + self.search_depth - depth - 1
 
-        if ply <= 2 and self._is_Student:
+        if ply <= 2 and self._use_symmetries:
             board_wrapper = gau_symm.BoardWrapper(game)
             score = self._symmetries_cache.get(board_wrapper, None)
             # self.symmetry_cache_hits[ply].append(1 if score is not None else 0)
             return score
 
     def _cache_move(self, game, score, depth):
+        if True:
+            return None
+
         ply = self._starting_ply + self.search_depth - depth - 1
 
-        if ply <= 2 and self._is_Student:
+        if ply <= 2 and self._use_symmetries:
             for board_wrapper in gau_symm.board_symmetries(game):
                 self._symmetries_cache[board_wrapper] = score
+
+    def _eval(self, game, depth):
+        """Use in place of self.score if you'd like to switch from heuristic
+        scoring to Monte Carlo rollouts low in the game tree, where the branching
+        factor is small.
+        """
+        # if True:
+        #     return self.score(game)
+
+        ply = self._starting_ply + self.search_depth - depth
+
+        if self._use_rollouts and ply >= 31:
+            weight = 4.0  # 2.0
+            n_rollouts = 7  # 14
+            # return float(sum(self._monte_carlo_rollout(game.copy()) for _ in range(n_rollouts)))
+            rollouts_score = sum(self._monte_carlo_rollout(game.copy()) for _ in range(n_rollouts))
+            # self.monte_carlo_scores_by_ply[ply][rollouts_score] += 1
+            # return float(rollouts_score)
+            score = self.score(game)
+            # self.scores_by_ply[ply][score] += 1
+            return score + weight * rollouts_score
+        else:
+            return self.score(game)
+
+    def _monte_carlo_rollout(self, game):
+        """Conducts a pure Monte Carlo rollout of the game. Returns
+        1.0 if self wins. Otherwise, returns -1.0.
+        """
+        while True:
+            if game.is_winner(self):
+                return 1
+            elif game.is_loser(self):
+                return -1
+
+            move = random.choice(game.get_legal_moves())  # Random legal move for active player.
+            game.apply_move(move)  # Applies move to board and changes active player.
+
+    # def show_stats(self):
+    #     if not self._show_stats:
+    #         return None
+
+    #     print()
+    #     print('Game depth:',
+    #           'Avg:', sum(self.game_depths) / len(self.game_depths),
+    #           'Min:', min(self.game_depths),
+    #           'Max:', max(self.game_depths))
+
+    #     print()
+    #     print('Branching factor',
+    #           'Avg:', sum(self.branching_factors) / len(self.branching_factors),
+    #           'Min:', min(self.branching_factors),
+    #           'Max:', max(self.branching_factors))
+
+    #     print()
+    #     print('Branching factors by ply:')
+    #     for ply,branching_factors in sorted(self.branching_factors_by_ply.items()):
+    #         print('    Ply:', ply,
+    #               'Avg:', sum(branching_factors) / len(branching_factors),
+    #               'Min:', min(branching_factors),
+    #               'Max:', max(branching_factors))
+
+    #     print()
+    #     print('AB pruning by ply:')
+    #     for ply,pruning_counts in sorted(self.ab_pruning_by_ply.items()):
+    #         print('    Ply:', ply,
+    #               'Avg:', sum(pruning_counts) / len(pruning_counts),
+    #               'Min:', min(pruning_counts),
+    #               'Max:', max(pruning_counts))
+
+    #     print()
+    #     print('Symmetry cache hits by ply:')
+    #     for ply,hits in sorted(self.symmetry_cache_hits.items()):
+    #         n_hits = sum(hits)
+
+    #         if n_hits > 0:
+    #             print('    Ply:', ply,
+    #                   'Hit ratio:', n_hits / len(hits),
+    #                   'Total hits:', n_hits)
+
+    #     print()
+    #     print('Monte Carlo rollout distributions by ply:')
+    #     for ply,dist in sorted(self.monte_carlo_scores_by_ply.items()):
+    #         print('    Ply:', ply, 'Distribution:', sorted(dist.items()))
+
+    #     print()
+    #     print('Heuristic score distributions by ply:')
+    #     for ply,dist in sorted(self.scores_by_ply.items()):
+    #         print('    Ply:', ply, 'Distribution:', sorted(dist.items()))
