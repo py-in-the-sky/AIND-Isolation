@@ -92,7 +92,8 @@ class CustomPlayer:
     """
 
     def __init__(self, search_depth=3, score_fn=custom_score, iterative=True, method='minimax',
-                 timeout=10., show_stats=False, use_symmetries=False, use_rollouts=False):
+                 timeout=10., show_stats=False, use_symmetries=False, use_rollouts=False,
+                 try_reflection=False):
         self.search_depth = search_depth
         self.iterative = iterative
         self.score = lambda game: score_fn(game, self)
@@ -102,12 +103,16 @@ class CustomPlayer:
 
         # Symmetries (i.e., reflections and rotations)
         self._symmetries_cache = None
-        self._starting_ply = 1
+        self._starting_ply = None
         self._n_squares = 0
-        self._use_symmetries = use_symmetries
+        self.use_symmetries = use_symmetries
 
         # Monte Carlo rollouts
-        self._use_rollouts = use_rollouts
+        self.use_rollouts = use_rollouts
+
+        # Opening moves
+        self.try_reflection = try_reflection
+        self._playing_reflection = False
 
         # Stats
         # self._show_stats = show_stats
@@ -154,22 +159,34 @@ class CustomPlayer:
             Board coordinates corresponding to a legal move; may return
             (-1, -1) if there are no available legal moves.
         """
-
         self.time_left = time_left
         self._n_squares = game.width * game.height
-        self._starting_ply = self._n_squares - len(game.get_blank_spaces()) + 1
+        new_starting_ply = self._n_squares - len(game.get_blank_spaces()) + 1
+        self._starting_ply = new_starting_ply  # Starting ply starts from 1, not 0.
+
+        if self.try_reflection:
+            # My opening book will include trying to reflect the opponent's moves if my
+            # try_reflection flag is True.
+            new_game = (self._starting_ply is None) or (new_starting_ply < self._starting_ply + 2)
+
+            if new_game:
+                self._playing_reflection = False  # We don't know yet whether we can play reflection, so set to False.
+
+            if self._playing_reflection:
+                return self._reflect(game)
+            elif self._starting_ply == 1 and self._has_center(game):  # I'm first mover of new game.
+                return self._board_center(game)
+            elif self._starting_ply == 2 and self._can_reflect(game):
+                # If I'm second mover of game and can reflect opponent's current move, play reflection.
+                self._playing_reflection = True
+                return self._reflect(game)
+            elif self._starting_ply == 3 and self._has_center(game) and self._can_reflect(game):
+                # If I'm first mover of game, I know I've played center of board, so if I can
+                # reflect opponent's current move, I initialize a game of reflection.
+                self._playing_reflection = True
+                return self._reflect(game)
 
         best_move = (-1, -1)
-
-        # TODO: Opening book: if reflection can be played, just play that (set some flag
-        # for the game). Otherwise, just play alpha-beta. Can keep track of when current
-        # game ends and new one begins by noting new _starting_ply <= old _starting_ply.
-
-        # TODO: finish this function!
-
-        # Perform any required initializations, including selecting an initial
-        # move from the game board (i.e., an opening book), or returning
-        # immediately if there are no legal moves
 
         try:
             # The search method call (alpha beta or minimax) should happen in
@@ -197,11 +214,22 @@ class CustomPlayer:
                 else:
                     _, best_move = self.alphabeta(game, self.search_depth)
         except Timeout:
-            # Handle any actions required at timeout, if necessary
             pass
 
-        # Return the best move from the last completed search iteration
+        # Return the best move from the last completed search iteration.
         return best_move
+
+    def _reflect(self, game):
+        pass
+
+    def _board_center(self, game):
+        pass
+
+    def _can_reflect(self, game):
+        pass
+
+    def _has_center(self, game):
+        pass
 
     def minimax(self, game, depth, maximizing_player=True):
         """Implement the minimax search algorithm as described in the lectures.
@@ -360,24 +388,24 @@ class CustomPlayer:
             return (val, best_move)
 
     def _check_symmetries(self, game, depth):
-        if True:
+        if not self.use_symmetries:
             return None
 
         ply = self._starting_ply + self.search_depth - depth - 1
 
-        if ply <= 2 and self._use_symmetries:
+        if ply <= 2:
             board_wrapper = gau_symm.BoardWrapper(game)
             score = self._symmetries_cache.get(board_wrapper, None)
             # self.symmetry_cache_hits[ply].append(1 if score is not None else 0)
             return score
 
     def _cache_move(self, game, score, depth):
-        if True:
+        if not self.use_symmetries:
             return None
 
         ply = self._starting_ply + self.search_depth - depth - 1
 
-        if ply <= 2 and self._use_symmetries:
+        if ply <= 2:
             for board_wrapper in gau_symm.board_symmetries(game):
                 self._symmetries_cache[board_wrapper] = score
 
@@ -386,23 +414,17 @@ class CustomPlayer:
         scoring to Monte Carlo rollouts low in the game tree, where the branching
         factor is small.
         """
-        # if True:
-        #     return self.score(game)
+        if not self.use_rollouts or ply < 31:
+            return self.score(game)
 
         ply = self._starting_ply + self.search_depth - depth
-
-        if self._use_rollouts and ply >= 31:
-            weight = 4.0  # 2.0
-            n_rollouts = 7  # 14
-            # return float(sum(self._monte_carlo_rollout(game.copy()) for _ in range(n_rollouts)))
-            rollouts_score = sum(self._monte_carlo_rollout(game.copy()) for _ in range(n_rollouts))
-            # self.monte_carlo_scores_by_ply[ply][rollouts_score] += 1
-            # return float(rollouts_score)
-            score = self.score(game)
-            # self.scores_by_ply[ply][score] += 1
-            return score + weight * rollouts_score
-        else:
-            return self.score(game)
+        weight = 2.0  # 4.0
+        n_rollouts = 14  # 7
+        rollouts_score = sum(self._monte_carlo_rollout(game.copy()) for _ in range(n_rollouts))
+        score = self.score(game)
+        # self.monte_carlo_scores_by_ply[ply][rollouts_score] += 1
+        # self.scores_by_ply[ply][score] += 1
+        return score + weight * rollouts_score
 
     def _monte_carlo_rollout(self, game):
         """Conducts a pure Monte Carlo rollout of the game. Returns

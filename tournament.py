@@ -159,14 +159,19 @@ def main():
     ab_agents = [Agent(CustomPlayer(score_fn=h, **AB_ARGS),
                        "AB_" + name) for name, h in HEURISTICS]
     random_agents = [Agent(RandomPlayer(), "Random")]
+    student_agents = [Agent(CustomPlayer(score_fn=custom_score, **CUSTOM_ARGS), "Student_2")]
+    id_improved_agents = [Agent(CustomPlayer(score_fn=improved_score, **CUSTOM_ARGS), "ID_Improved_2")]
 
     # ID_Improved agent is used for comparison to the performance of the
     # submitted agent for calibration on the performance across different
     # systems; i.e., the performance of the student agent is considered
     # relative to the performance of the ID_Improved agent to account for
     # faster or slower computers.
-    test_agents = [Agent(CustomPlayer(score_fn=improved_score, **CUSTOM_ARGS), "ID_Improved"),
-                   Agent(CustomPlayer(score_fn=custom_score, **CUSTOM_ARGS), "Student"),]
+    test_agents = [
+                   # Agent(CustomPlayer(score_fn=improved_score, **CUSTOM_ARGS), "ID_Improved"),
+                   # Agent(CustomPlayer(score_fn=custom_score, **CUSTOM_ARGS), "Student"),
+                   Agent(CustomPlayer(score_fn=custom_score, use_rollouts=True, **CUSTOM_ARGS), "StudentRollouts"),
+                   ]
 
     print(DESCRIPTION)
     for agentUT in test_agents:
@@ -176,6 +181,7 @@ def main():
         print("*************************")
 
         agents = random_agents + mm_agents + ab_agents + [agentUT]
+        # agents = random_agents + mm_agents + ab_agents + id_improved_agents + student_agents + [agentUT]
         win_ratio = play_round(agents, NUM_MATCHES)
 
         print("\n\nResults:")
@@ -184,6 +190,7 @@ def main():
 
         if hasattr(agentUT.player, 'show_stats'):
             agentUT.play.show_stats()
+
 
 if __name__ == "__main__":
     main()
