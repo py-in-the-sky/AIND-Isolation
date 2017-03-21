@@ -113,6 +113,7 @@ class CustomPlayer:
         # Opening moves
         self.try_reflection = try_reflection
         self._playing_reflection = False
+        self._played_board_center = False
 
         # Stats
         # self._show_stats = show_stats
@@ -168,23 +169,10 @@ class CustomPlayer:
             # My opening book will include trying to reflect the opponent's moves if my
             # try_reflection flag is True.
             new_game = (self._starting_ply is None) or (new_starting_ply < self._starting_ply + 2)
+            move = self._reflection(game, new_game)
 
-            if new_game:
-                self._playing_reflection = False  # We don't know yet whether we can play reflection, so set to False.
-
-            if self._playing_reflection:
-                return self._reflect(game)
-            elif self._starting_ply == 1 and self._has_center(game):  # I'm first mover of new game.
-                return self._board_center(game)
-            elif self._starting_ply == 2 and self._can_reflect(game):
-                # If I'm second mover of game and can reflect opponent's current move, play reflection.
-                self._playing_reflection = True
-                return self._reflect(game)
-            elif self._starting_ply == 3 and self._has_center(game) and self._can_reflect(game):
-                # If I'm first mover of game, I know I've played center of board, so if I can
-                # reflect opponent's current move, I initialize a game of reflection.
-                self._playing_reflection = True
-                return self._reflect(game)
+            if move is not None:
+                return move
 
         best_move = (-1, -1)
 
@@ -219,17 +207,53 @@ class CustomPlayer:
         # Return the best move from the last completed search iteration.
         return best_move
 
+    def _reflection(self, game, new_game):
+        """Returns reflection (i.e., 180-degree rotation) of opponent's last move if
+        playing reflection is a valid strategy. Otherwise, returns None.
+        """
+        if new_game:
+            # With a new game, we don't know yet whether we can play reflection, so set to False.
+            self._playing_reflection = False
+            self._played_board_center = False
+
+        if self._playing_reflection:
+            return self._reflect(game)
+        elif self._starting_ply == 1 and self._has_center(game):
+            # I'm first mover of new game, and board has a center (i.e., board has odd
+            # height and odd width).
+            self._played_board_center = True
+            return self._board_center(game)
+        elif self._starting_ply == 2 and self._can_reflect(game):
+            # If I'm second mover of game and can reflect opponent's current move, play reflection.
+            self._playing_reflection = True
+            return self._reflect(game)
+        elif self._starting_ply == 3 and self._played_board_center and self._can_reflect(game):
+            # If I'm first mover of game and I know I've played center of board, then if I can
+            # reflect opponent's current move, I play reflection.
+            self._playing_reflection = True
+            return self._reflect(game)
+
     def _reflect(self, game):
-        pass
-
-    def _board_center(self, game):
-        pass
-
-    def _can_reflect(self, game):
-        pass
+        "180-degree rotation of opponent's last move."
+        opp_move = game.get_player_location(game.get_opponent(self))
+        return gau_symm.rotate_180(opp_move, game.width, game.height)
 
     def _has_center(self, game):
-        pass
+        "True is board has odd height and width. Otherwise, False."
+        return (game.width % 2 == 1) and (game.height % 2 == 1)
+
+    def _board_center(self, game):
+        """Return center square of the board. If board does not have odd height and width,
+        then this function will return the bottom-right of the center cluster of squares."""
+        row = game.height // 2
+        col = game.width // 2
+        return (row, col)
+
+    def _can_reflect(self, game):
+        """True if the 180-degree rotation of the opponent's last move is a
+        legal move for me. Otherwise, False.
+        """
+        return game.move_is_legal(self._reflect(game))
 
     def minimax(self, game, depth, maximizing_player=True):
         """Implement the minimax search algorithm as described in the lectures.
