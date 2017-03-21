@@ -414,15 +414,15 @@ class CustomPlayer:
         scoring to Monte Carlo rollouts low in the game tree, where the branching
         factor is small.
         """
+        score = self.score(game)
         ply = self._starting_ply + self.search_depth - depth
 
         if not self.use_rollouts or ply < 31:
-            return self.score(game)
+            return score
 
         weight = 2.0  # 4.0
         n_rollouts = 14  # 7
         rollouts_score = sum(self._monte_carlo_rollout(game.copy()) for _ in range(n_rollouts))
-        score = self.score(game)
         # self.monte_carlo_scores_by_ply[ply][rollouts_score] += 1
         # self.scores_by_ply[ply][score] += 1
         return score + weight * rollouts_score
