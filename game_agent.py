@@ -376,9 +376,13 @@ class CustomPlayer:
         factor is small.
         """
         score = self.score(game)
+
+        if not self.use_rollouts:
+            return score
+
         ply = self._starting_ply + self.search_depth - depth
 
-        if not self.use_rollouts or ply < 31:
+        if ply < 31:
             return score
 
         weight = 2.0  # 4.0
