@@ -1,9 +1,9 @@
 
 ISOLATION STATS
 
-Performance: Using the interleaved_bfs_depth_n heuristic, my agent has never lost to ID_Improved and usually beats ID_Improved by 10-15 percentage points -- typically 80% to 65% or 80% to 73% or 84% to 64% or 74% to 67% or 81% to 71% or 82.14% to 73.57% or 82.14%% to 65.71% or 77.14% to 67.86% or 84.29% to 72.14% or 85.00% to 67.14%. Hardware: Macbook Pro 2.5Gz i5 8GB RAM.
+Performance: Using the interleaved_bfs_depth_n heuristic, my agent has never lost to ID_Improved and usually beats ID_Improved by 10-15 percentage points. Some samples: 80% to 65%, 80% to 73%, 84% to 64%. Hardware: Macbook Pro 2.5Gz i5 8GB RAM.
 
-Monte Carlo rollouts show rollout scores strongly bimodal at ply 31 and beyond, suggesting that the game is already determined, many times, at ply 31. Therefore, using a Monte Carlo rollout at ply 31 and beyond can help inform the player's choice of move.
+Monte Carlo rollouts: Statistics show that rollout scores are strongly bimodal at ply 31 and beyond, suggesting that the game is already determined, many times, at ply 31. Therefore, using a Monte Carlo rollout at ply 31 and beyond can help inform the player's choice of move.
 
 Game depth: Avg: 30 Min: 7 Max: 44
 Branching factor Avg: 4 Min: 0 Max: 49
