@@ -168,7 +168,7 @@ def main():
     # relative to the performance of the ID_Improved agent to account for
     # faster or slower computers.
     test_agents = [
-                   # Agent(CustomPlayer(score_fn=improved_score, **CUSTOM_ARGS), "ID_Improved"),
+                   Agent(CustomPlayer(score_fn=improved_score, **CUSTOM_ARGS), "ID_Improved"),
                    Agent(CustomPlayer(score_fn=custom_score, **CUSTOM_ARGS), "Student"),
                    Agent(CustomPlayer(score_fn=custom_score, use_rollouts=True, **CUSTOM_ARGS), "StudentRollouts"),
                    ]
@@ -189,7 +189,7 @@ def main():
         print("{!s:<15}{:>10.2f}%".format(agentUT.name, win_ratio))
 
         if hasattr(agentUT.player, 'show_stats'):
-            agentUT.play.show_stats()
+            agentUT.player.show_stats()
 
 
 if __name__ == "__main__":

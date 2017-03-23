@@ -1,23 +1,41 @@
 from collections import deque
 
 
-KNIGHT_DIRECTIONS = [(-2, -1), (-2, 1), (-1, -2), (-1, 2), (1, -2), (1, 2), (2, -1), (2, 1)]
+### Heuristics
 
+def improved_score_depth_n(game, player, max_depth=2):
+    """Like the improved-score heuristic, except that it considers not just
+    the immediate squares available to a player but also the squares that are
+    one, two, ..., max_depth moves away from the player.
 
-def moves(location, available):
-    """Given a location on the board and all available (blank) spaces
-    on the board, return all locations on the board that are valid moves.
+    Each square that figures into a player's score is weighted by the number of
+    moves (i.e., search depth) it takes for the player to get there. Therefore,
+    this scoring favors players that can potentially make many subsequent moves
+    in the future. The heuristic uses breadth-first search to determine how
+    many moves there are between a square and a player's current position.
+
+    Parameters
+    ----------
+    game : `isolation.Board`
+        An instance of `isolation.Board` encoding the current state of the
+        game (e.g., player locations and blocked cells).
+
+    player : hashable
+        One of the objects registered by the game object as a valid player.
+        (i.e., `player` should be either game.__player_1__ or
+        game.__player_2__).
+
+    max_depth : integer
+        Controls how deep the search algorithm will go to find squares that are
+        open to a player. E.g., if max_depth = 2, then the algorithm will count
+        all squares that are one and two hops away from a player's current
+        position.
+
+    Returns
+    ----------
+    float
+        The heuristic value of the current game state
     """
-    if location is None:
-        return available
-
-    r, c = location
-    moves = ((r+dr, c+dc) for dr,dc in KNIGHT_DIRECTIONS)
-    valid_moves = (loc for loc in moves if loc in available)
-    return valid_moves
-
-
-def open_moves_depth_n(game, player, max_depth=2):
     def _bfs_score(p):
         location = game.get_player_location(p)
         visited = {}  # location: depth
@@ -27,7 +45,7 @@ def open_moves_depth_n(game, player, max_depth=2):
             loc, depth = q.popleft()
             if depth <= max_depth and loc not in visited:
                 visited[loc] = depth
-                for loc2 in moves(loc, available):
+                for loc2 in _moves(loc, available):
                     if loc2 not in visited:
                         q.append((loc2, depth+1))
 
@@ -37,30 +55,68 @@ def open_moves_depth_n(game, player, max_depth=2):
     return float(_bfs_score(player) - _bfs_score(game.get_opponent(player)))
 
 
-def interleaved_bfs_depth_n(game, player, max_depth=4):
-    def _bfs(pA, pI):
-        score = 0
-        locA, locI = game.get_player_location(pA), game.get_player_location(pI)
-        q = deque([(locA, 1, 0), (locI, -1, 0)])
-        visited = set()
+def who_can_get_there_first(game, player, max_depth=4):
+    """Similar in spirit to improved_score_depth_n. However, if a player can
+    get to a square first in the breadth-first search, then that square cannot
+    count as an open square for the opponent.
 
-        while q:
-            loc, weight, depth = q.popleft()
-            if depth <= max_depth and loc not in visited:
-                visited.add(loc)
-                score += weight * depth
-                for loc2 in moves(loc, available):
-                    if loc2 not in visited:
-                        q.append((loc2, weight, depth+1))
+    This is how we determine who can get to a square first: a breadth-first
+    search is conducted, where the active player (the one who has the next
+    move in the game) first gets to move to all squares that are one move away.
+    Then those squares are not available to the inactive player, who then gets to
+    move to all squares that are one move away from his current position that have
+    not been consumed by the active player. Then the active player gets to move to
+    all squares that are two moves away, making those unavailable to the inactive
+    player. And so on.
 
-        return score
+    Parameters
+    ----------
+    game : `isolation.Board`
+        An instance of `isolation.Board` encoding the current state of the
+        game (e.g., player locations and blocked cells).
 
+    player : hashable
+        One of the objects registered by the game object as a valid player.
+        (i.e., `player` should be either game.__player_1__ or
+        game.__player_2__).
+
+    max_depth : integer
+        Controls how deep the search algorithm will go to find squares that are
+        open to a player. E.g., if max_depth = 2, then the algorithm will count
+        all squares that are one and two hops away from a player's current
+        position.
+
+    Returns
+    ----------
+    float
+        The heuristic value of the current game state
+    """
     weight = 1 if player == game.active_player else -1
-    available = set(game.get_blank_spaces())
-    return weight * _bfs(game.active_player, game.inactive_player)
+    return weight * _interleaved_bfs_depth_n(game, max_depth)
 
 
 def bfs_max_depth_heuristic(game, player):
+    """Perfoms a breadth-first search for each player from the player's
+    current position over all blank squares on the board. Outputs the
+    difference between the maximum search depth that `player` and `player`'s
+    opponent can achieve.
+
+    Parameters
+    ----------
+    game : `isolation.Board`
+        An instance of `isolation.Board` encoding the current state of the
+        game (e.g., player locations and blocked cells).
+
+    player : hashable
+        One of the objects registered by the game object as a valid player.
+        (i.e., `player` should be either game.__player_1__ or
+        game.__player_2__).
+
+    Returns
+    ----------
+    float
+        The heuristic value of the current game state
+    """
     def _max_depth(p):
         location = game.get_player_location(p)
         visited = {}  # location: depth
@@ -70,7 +126,7 @@ def bfs_max_depth_heuristic(game, player):
             loc, depth = q.popleft()
             if loc not in visited:
                 visited[loc] = depth
-                for loc2 in moves(loc, available):
+                for loc2 in _moves(loc, available):
                     if loc2 not in visited:
                         q.append((loc2, depth+1))
 
@@ -80,29 +136,15 @@ def bfs_max_depth_heuristic(game, player):
     return float(_max_depth(player) - _max_depth(game.get_opponent(player)))
 
 
-def bfs_open_moves_heuristic(game, player, bfs_depth=5):
-    def _bfs_score(p):
-        location = game.get_player_location(p)
-        available = set(game.get_blank_spaces())
-        visited = {}  # location: depth
-        q = deque([ (location, 0) ])  # (location, depth)
-
-        while q:
-            loc, depth = q.popleft()
-
-            if depth <= bfs_depth and loc not in visited:
-                visited[loc] = depth
-
-                for loc2 in moves(loc, available):
-                    if loc2 not in visited:
-                        q.append((loc2, depth+1))
-
-        return sum(visited.values())
-
-    return float(_bfs_score(player) - _bfs_score(game.get_opponent(player)))
-
-
 def bfs_open_moves_with_blocking_heuristic(game, player, bfs_depth=5):
+    """Similar to who_can_get_there_first but more complicated and less
+    effective.
+
+    It only allows the active player to block the inactive player, whereas
+    who_can_get_there_first allows each player to block the other.
+
+    It was the first iteration on what eventually led to who_can_get_there_first.
+    """
     active_player, inactive_player = game.active_player, game.inactive_player
     available = set(game.get_blank_spaces())
     inf = float('inf')
@@ -116,7 +158,7 @@ def bfs_open_moves_with_blocking_heuristic(game, player, bfs_depth=5):
         if depth <= bfs_depth and loc not in active_player_visited:
             active_player_visited[loc] = depth
             active_player_score += depth
-            for loc2 in moves(loc, available):
+            for loc2 in _moves(loc, available):
                 if loc2 not in active_player_visited:
                     q.append((loc2, depth+1))
 
@@ -129,7 +171,7 @@ def bfs_open_moves_with_blocking_heuristic(game, player, bfs_depth=5):
         if depth <= bfs_depth and loc not in inactive_player_visited and depth < active_player_visited.get(loc, inf):
             inactive_player_visited[loc] = depth
             inactive_player_score += depth
-            for loc2 in moves(loc, available):
+            for loc2 in _moves(loc, available):
                 if loc2 not in inactive_player_visited:
                     q.append((loc2, depth+1))
 
@@ -137,3 +179,94 @@ def bfs_open_moves_with_blocking_heuristic(game, player, bfs_depth=5):
         return float(active_player_score - inactive_player_score)
     else:
         return float(inactive_player_score - active_player_score)
+
+
+### Utilities
+
+KNIGHT_DIRECTIONS = [(-2, -1), (-2, 1), (-1, -2), (-1, 2), (1, -2), (1, 2), (2, -1), (2, 1)]
+
+
+def _moves(location, available):
+    """Given a board location and all available (blank) spaces on the board,
+    return all board locations that are valid moves.
+
+    Parameters
+    ----------
+    location : (int, int)
+        A (row, column) tuple representing a location on the board.
+
+    available : set
+        A set of all (row, column) tuples that are blank on the board.
+
+    Returns
+    ----------
+    [(int, int)]
+        A list of (row, column) tuples that are valid knight moves from location.
+    """
+    if location is None:
+        return available
+
+    r, c = location
+    moves = ((r+dr, c+dc) for dr,dc in KNIGHT_DIRECTIONS)
+    valid_moves = (loc for loc in moves if loc in available)
+    return valid_moves
+
+
+def _interleaved_bfs_depth_n(game, max_depth=4):
+    """Scores the game board from the perspective of the active player.
+
+    Every square that the active player can reach first in the breadth-first
+    search contributes `depth` to the score, where `depth` is the search
+    depth of that square from the active player's current position.
+
+    Every square that the inactive player can reach first in the breadth-first
+    search contributes `-1 * depth` to the score.
+
+    We use `depth` to contribute to the score, so that squares that are farther
+    away from a player's current position on the board contribute more to the
+    score. This scoring mechanism favors players that have many moves left in
+    their future.
+
+    The active player, who is the next player to move in the game, gets first-mover
+    advantage in the breadh-first search.
+
+    A positive score means that the active player has more squares closer to him
+    and has a better chance of cutting off the movement of the inactive player.
+    Similarly, a negative score means that the inactive player has more squares
+    closer to him and has a better chance of cutting of the movement of the
+    active player.
+
+    Parameters
+    ----------
+    game : `isolation.Board`
+        An instance of `isolation.Board` encoding the current state of the
+        game (e.g., player locations and blocked cells).
+
+    max_depth : integer
+        Controls how deep the search algorithm will go to find squares that are
+        open to a player. E.g., if max_depth = 2, then the algorithm will count
+        all squares that are one and two hops away from a player's current
+        position.
+
+    Returns
+    ----------
+    int
+        A score for the current game state
+    """
+    score = 0
+    locA = game.get_player_location(game.active_player)
+    locI = game.get_player_location(game.inactive_player)
+    q = deque([ (locA, 1, 0), (locI, -1, 0) ])  # Tuples of (location, weight, depth).
+    available = set(game.get_blank_spaces())
+    visited = set()
+
+    while q:
+        loc, weight, depth = q.popleft()
+        if depth <= max_depth and loc not in visited:
+            visited.add(loc)
+            score += weight * depth
+            for loc2 in _moves(loc, available):
+                if loc2 not in visited:
+                    q.append((loc2, weight, depth+1))
+
+    return score

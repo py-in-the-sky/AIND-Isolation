@@ -11,8 +11,8 @@ class BoardWrapper:
         self.board = board
         self._key = self._board_state()
         self._hash = hash(self._key)
-        # This is a bit of a hack to keep _key and _hash as static values,
-        # given board is mutable. However, boards aren't treated as mutable
+        # Keeping _key and _hash as static values is a bit of a hack, given
+        # the board is mutable. However, boards aren't treated as mutable
         # values in the life of a call to alpha_beta, and therefore this
         # works.
 
