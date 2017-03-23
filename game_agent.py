@@ -1,12 +1,4 @@
 """
-TODO: Optimizations
-    * Symmetries
-    * Iterative deepening: order exploration of children based on last iteration's
-      scores for the children (suggestion from AIMA)
-    * Represent board as bit array (i.e., integer) where square (0, 0) is the
-      least significant bit, and a 1 represents an unavailable square.
-    * Iterative deepening: keep going until 50ms left.
-
 This file contains all the classes you must complete for this project.
 
 You can use the test cases in agent_test.py to help during development, and

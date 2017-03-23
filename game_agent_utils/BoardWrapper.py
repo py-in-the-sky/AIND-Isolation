@@ -6,6 +6,9 @@ class BoardWrapper:
     A hashable and __eq__ comparable representation of the board state.
 
     Exposes the Isolation board via the `board` attribute.
+
+    Instances can be used as keys in a hash table. For example, use this
+    class if you'd like to memoize the heuristic score of a board state.
     """
     def __init__(self, board):
         self.board = board
@@ -23,6 +26,11 @@ class BoardWrapper:
         return isinstance(other, BoardWrapper) and self._key == other._key
 
     def _board_state(self):
+        """A (int, int, int, int, int) tuple representing the board state:
+        the board's width, height, active-player location, inactive-player
+        location, and a bit array representing all blank spaces currently
+        on the board.
+        """
         return (self.board.width,
                 self.board.height,
                 self.board.get_player_location(self.board.active_player),
