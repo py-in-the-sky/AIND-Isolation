@@ -43,8 +43,8 @@ def custom_score(game, player):
     float
         The heuristic value of the current game state to the specified player.
     """
-    # `player` is treated as the maximizing player for the game tree, not as
-    # the player with the current move.
+    # `player` is treated as the maximizing player for the game tree, not
+    # necessarily as the player with the current move.
     score = gau_heur.who_can_get_there_first(game, player, max_depth=5)
     return float(score)
 
@@ -77,6 +77,26 @@ class CustomPlayer:
         Time remaining (in milliseconds) when search is aborted. Should be a
         positive value large enough to allow the function to return before the
         timer expires.
+
+    show_stats : boolean (optional)
+        Whether to record statistics so that they can be show when the show_stats
+        method is called.
+
+    use_symmetries : boolean (optional)
+        Whether to use board symmetries to prune the game tree at early plies in
+        the game tree. Scores for games will be memoized and then reflections and
+        rotations of boards will be searched to see whether an equivalent board
+        state has been searched before.
+
+    use_rollouts : boolean (optional)
+        Whether to use pure Monte Carlo rollouts low in the game tree (i.e., at
+        late plies) to help estimate the value of an internal node of the game
+        tree.
+
+    try_reflection : boolean (optional)
+        Whether to try to play the "reflection" strategy as an opening move.
+        The strategy is simple: always play the 180-degree rotation of your
+        opponent's last move.
     """
 
     def __init__(self, search_depth=3, score_fn=custom_score, iterative=True, method='minimax',
@@ -150,10 +170,14 @@ class CustomPlayer:
             (-1, -1) if there are no available legal moves.
         """
         self.time_left = time_left
+
         self._n_squares = game.width * game.height
         new_starting_ply = self._n_squares - len(game.get_blank_spaces()) + 1
         self._starting_ply = new_starting_ply  # Starting ply starts from 1, not 0.
         new_game = (self._starting_ply is None) or (new_starting_ply < self._starting_ply + 2)
+        # new_game: whether a new game has been passed to get_move or I'm continuing an ongoing game.
+        # This is useful in the case of playing the "reflection" strategy: if I've committed to
+        # playing that strategy, then I will continue doing so as long as a new game hasn't started.
 
         move = self._opening_book(game, new_game)
         if move is not None:
