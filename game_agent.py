@@ -184,35 +184,29 @@ class CustomPlayer:
             return move
 
         best_move = (-1, -1)
-        dynamic_search_depth = 0
+        dynamic_search_depth = 0  # Used for iterative deepening.
+        search_method = self.minimax if self.method == 'minimax' else self.alphabeta
 
         try:
             # The search method call (alpha beta or minimax) should happen in
             # here in order to avoid timeout. The try/except block will
             # automatically catch the exception raised by the search method
             # when the timer gets close to expiring
-            if self.method == 'minimax':
-                if self.iterative:
-                    while dynamic_search_depth <= self._n_squares:
-                        self._symmetries_cache = {}
-                        self.search_depth = dynamic_search_depth
-                        _, best_move = self.minimax(game, dynamic_search_depth)
-                        dynamic_search_depth += 1
-                else:
-                    _, best_move = self.minimax(game, self.search_depth)
+            if self.iterative:
+                while dynamic_search_depth <= self._n_squares:
+                    # `dynamic_search_depth <= self._n_squares` is a quick check that the
+                    # board could not have been filled out. This prevents the while loop
+                    # from continuing to spin while not move can be made on the board,
+                    # helping the matches to proceed more quickly.
+                    self._symmetries_cache = {}
+                    self.search_depth = dynamic_search_depth
+                    _, best_move = search_method(game, dynamic_search_depth)
+                    dynamic_search_depth += 1
             else:
-                if self.iterative:
-                    while dynamic_search_depth <= self._n_squares:
-                        self._symmetries_cache = {}
-                        self.search_depth = dynamic_search_depth
-                        _, best_move = self.alphabeta(game, dynamic_search_depth)
-                        dynamic_search_depth += 1
-                else:
-                    _, best_move = self.alphabeta(game, self.search_depth)
+                _, best_move = search_method(game, self.search_depth)
         except Timeout:
             pass
 
-        # Return the best move from the last completed search iteration.
         # self.search_depths[dynamic_search_depth] += 1
         return best_move
 
@@ -255,13 +249,14 @@ class CustomPlayer:
         elif game.is_loser(self):
             return float('-inf'), (-1, -1)
         elif depth == 0:
-            score = self.score(game)
-            return score, (-1, -1)
+            return self.score(game), (-1, -1)
 
-        opt_fn = max if maximizing_player else min
-        d, m_player = depth-1, not maximizing_player
-        score, move = opt_fn(((self.minimax(game.forecast_move(m), d, m_player)[0], m)
-                               for m in game.get_legal_moves()), key=lambda pair: pair[0])
+        new_depth = depth - 1
+        m_player = not maximizing_player
+        optimizing_fn = max if maximizing_player else min
+        score, move = optimizing_fn(((self.minimax(game.forecast_move(m), new_depth, m_player)[0], m)
+                                     for m in game.get_legal_moves()),
+                                    key=lambda pair: pair[0])
         self._cache_move(game, score, depth)
         return score, move
 
@@ -322,7 +317,7 @@ class CustomPlayer:
             #     print('Leaf node. Starting ply:', self._starting_ply, 'Current ply:', ply)
             return float('-inf'), (-1, -1)
         elif depth == 0:
-            score = self._eval(game, depth)
+            score = self._eval(game, depth)  # _eval wraps self.score and optionally performs Monte Carlo rollouts.
             return score, (-1, -1)
 
         symmetry_score = self._check_symmetries(game, depth)
@@ -373,6 +368,29 @@ class CustomPlayer:
             return (val, best_move)
 
     def _check_symmetries(self, game, depth):
+        """See whether an equivalent game state has already been evaluated.
+        Returns None if self.use_symmetries is False or the ply of the
+        game state is > 2.
+
+        Equivalent game states are all rotations and reflections of the
+        game board and the players' current positions.
+
+        Parameters
+        ----------
+        game : `isolation.Board`
+            An instance of `isolation.Board` encoding the current state of the
+            game (e.g., player locations and blocked cells).
+
+        depth : int
+            The distance from this search's terminal search depth.
+
+        Returns
+        -------
+        float or None
+            Returns the score if an equivalent game state has been memoized
+            and the self.use_symmetries flag is set to True. Otherwise, returns
+            None.
+        """
         if not self.use_symmetries:
             return None
 
@@ -385,6 +403,25 @@ class CustomPlayer:
             return score
 
     def _cache_move(self, game, score, depth):
+        """If the self.use_symmetries flag is set to True and the ply of the
+        game state is <= 2, then this function will memoize the score for the
+        game state and all equivalent game states.
+
+        Equivalent game states are all rotations and reflections of the
+        game board and the players' current positions.
+
+        Parameters
+        ----------
+        game : `isolation.Board`
+            An instance of `isolation.Board` encoding the current state of the
+            game (e.g., player locations and blocked cells).
+
+        score : float
+            The score for the game state.
+
+        depth : int
+            The distance from this search's terminal search depth.
+        """
         if not self.use_symmetries:
             return None
 
@@ -395,9 +432,28 @@ class CustomPlayer:
                 self._symmetries_cache[board_wrapper] = score
 
     def _eval(self, game, depth):
-        """Use in place of self.score if you'd like to switch from heuristic
-        scoring to Monte Carlo rollouts low in the game tree, where the branching
-        factor is small.
+        """Returns a score for a node in the game tree.
+
+        Use in place of self.score if you'd like to switch from heuristic
+        scoring to Monte Carlo rollouts low in the game tree, where the
+        branching factor is small.
+
+        Will use rollouts if self.use_rollouts is True and the ply of the
+        game state is >= 31.
+
+        Parameters
+        ----------
+        game : `isolation.Board`
+            An instance of `isolation.Board` encoding the current state of the
+            game (e.g., player locations and blocked cells).
+
+        depth : int
+            The distance from this search's terminal search depth.
+
+        Returns
+        -------
+        float
+            Returns an score for the game-tree node.
         """
         score = self.score(game)
 
@@ -418,7 +474,20 @@ class CustomPlayer:
 
     def _monte_carlo_rollout(self, game):
         """Conducts a pure Monte Carlo rollout of the game. Returns
-        1.0 if self wins. Otherwise, returns -1.0.
+        1 if self wins. Otherwise, returns -1.
+
+        Will mutate game, so pass in a game.copy() if mutation is not desired.
+
+        Parameters
+        ----------
+        game : `isolation.Board`
+            An instance of `isolation.Board` encoding the current state of the
+            game (e.g., player locations and blocked cells).
+
+        Returns
+        -------
+        int
+            1 is self wins; otherwise, -1.
         """
         while True:
             if game.is_winner(self):
@@ -430,6 +499,24 @@ class CustomPlayer:
             game.apply_move(move)  # Applies move to board and changes active player.
 
     def _opening_book(self, game, new_game):
+        """Analyzes the game state and tries to return an intelligent
+        opening move. If no move can be determined, returns None.
+
+        Parameters
+        ----------
+        game : `isolation.Board`
+            An instance of `isolation.Board` encoding the current state of the
+            game (e.g., player locations and blocked cells).
+
+        new_game : boolean
+            Indicates whether a new game is being played this round or an old
+            one is being continued.
+
+        Returns
+        -------
+        tuple(int, int) or None
+            An opening move, if one can be determined. Otherwise, None.
+        """
         if self.try_reflection:
             # My opening book will include trying to reflect the opponent's moves if my
             # try_reflection flag is True.
@@ -464,6 +551,21 @@ class CustomPlayer:
         The only time this can fail is if the opponent has the first move and doesn't move
         into center. Then it's conceivable that one of the opponent's future moves will be
         to the center of the board, which is a move that cannot be reflected.
+
+        Parameters
+        ----------
+        game : `isolation.Board`
+            An instance of `isolation.Board` encoding the current state of the
+            game (e.g., player locations and blocked cells).
+
+        new_game : boolean
+            Indicates whether a new game is being played this round or an old
+            one is being continued.
+
+        Returns
+        -------
+        tuple(int, int) or None
+            A move using reflection, if possible. Otherwise, None.
         """
         if new_game:
             # With a new game, we don't know yet whether we can play reflection, so set to False.
@@ -488,12 +590,25 @@ class CustomPlayer:
             return self._reflect(game)
 
     def _reflect(self, game):
-        "180-degree rotation of opponent's last move."
+        """180-degree rotation of opponent's last move.
+
+        Parameters
+        ----------
+        game : `isolation.Board`
+            An instance of `isolation.Board` encoding the current state of the
+            game (e.g., player locations and blocked cells).
+
+        Returns
+        -------
+        tuple(int, int)
+            A (row, column) tuple that is a 180-degree rotation of the opponent's
+            last move.
+        """
         opp_move = game.get_player_location(game.get_opponent(self))
         return gau_symm.rotate_180(opp_move, game.width, game.height)
 
     def _has_center(self, game):
-        "True is board has odd height and width. Otherwise, False."
+        "True if board has odd height and width. Otherwise, False."
         return (game.width % 2 == 1) and (game.height % 2 == 1)
 
     def _board_center(self, game):
