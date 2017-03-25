@@ -282,16 +282,16 @@ def _interleaved_bfs_depth_n(game, max_depth=4):
     locI = game.get_player_location(game.inactive_player)
     q = deque([ (locA, 1, 0), (locI, -1, 0) ])  # Tuples of (location, weight, depth).
     available = set(game.get_blank_spaces())
-    visited = set()
 
     while q:
         loc, weight, depth = q.popleft()
-        if depth <= max_depth and loc not in visited:
-            visited.add(loc)
+        if loc in available or loc in (locA, locI):
+            available.discard(loc)
             score += weight * depth
-            for loc2 in _moves(loc, available):
-                if loc2 not in visited:
-                    q.append((loc2, weight, depth+1))
+            if depth < max_depth:
+                for loc2 in _moves(loc, available):
+                    if loc2 in available:
+                        q.append((loc2, weight, depth+1))
 
     return score
 

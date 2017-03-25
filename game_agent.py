@@ -45,7 +45,7 @@ def custom_score(game, player):
     """
     # `player` is treated as the maximizing player for the game tree, not
     # necessarily as the player with the current move.
-    score = gau_heur.who_can_get_there_first_depth_n(game, player, max_depth=6)
+    score = gau_heur.who_can_get_there_first_depth_n(game, player, max_depth=5)
     return float(score)
 
 
@@ -88,6 +88,10 @@ class CustomPlayer:
         rotations of boards will be searched to see whether an equivalent board
         state has been searched before.
 
+    symmetry_threshold : boolean (optional)
+        The depth (ply) of the game tree up to which symmetrically equivalent boards
+        will be used to prune the game tree.
+
     use_rollouts : boolean (optional)
         Whether to use pure Monte Carlo rollouts low in the game tree (i.e., at
         late plies) to help estimate the value of an internal node of the game
@@ -100,8 +104,8 @@ class CustomPlayer:
     """
 
     def __init__(self, search_depth=3, score_fn=custom_score, iterative=True, method='minimax',
-                 timeout=10., show_stats=False, use_symmetries=False, use_rollouts=False,
-                 try_reflection=False):
+                 timeout=10., show_stats=False, use_symmetries=False, symmetry_threshold=2,
+                 use_rollouts=False, try_reflection=False):
         self.search_depth = search_depth
         self.iterative = iterative
         self.score = lambda game: score_fn(game, self)
@@ -114,6 +118,7 @@ class CustomPlayer:
         self._starting_ply = None
         self._n_squares = 0
         self.use_symmetries = use_symmetries
+        self.symmetry_threshold = symmetry_threshold
 
         # Monte Carlo rollouts
         self.use_rollouts = use_rollouts
@@ -393,7 +398,7 @@ class CustomPlayer:
 
         ply = self._starting_ply + self.search_depth - depth - 1
 
-        if ply <= 2:
+        if ply <= self.symmetry_threshold:
             board_wrapper = gau_symm.BoardWrapper(game)
             score = self._symmetries_cache.get(board_wrapper, None)
             # self.symmetry_cache_hits[ply].append(1 if score is not None else 0)
@@ -424,7 +429,7 @@ class CustomPlayer:
 
         ply = self._starting_ply + self.search_depth - depth - 1
 
-        if ply <= 2:
+        if ply <= self.symmetry_threshold:
             for board_wrapper in gau_symm.board_symmetries(game):
                 self._symmetries_cache[board_wrapper] = score
 
