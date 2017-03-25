@@ -45,7 +45,7 @@ def custom_score(game, player):
     """
     # `player` is treated as the maximizing player for the game tree, not
     # necessarily as the player with the current move.
-    score = gau_heur.who_can_get_there_first(game, player, max_depth=5)
+    score = gau_heur.who_can_get_there_first_depth_n(game, player, max_depth=6)
     return float(score)
 
 
@@ -301,37 +301,37 @@ class CustomPlayer:
         if self.time_left() < self.TIMER_THRESHOLD:
             raise Timeout()
 
+        # The following are for gathering statistics:
         # ply = self._starting_ply + self.search_depth - depth
         # n_legal_moves = len(game.get_legal_moves())
         # self.branching_factors.append(n_legal_moves)
         # self.branching_factors_by_ply[ply].append(n_legal_moves)
 
+        # Handle game ending or search depth maxed out:
         if game.is_winner(self):
             # self.game_depths.append(ply)
-            # if self.iterative and (self._starting_ply <= 3 or ply - self._starting_ply >= 15):
-            #     print('Leaf node. Starting ply:', self._starting_ply, 'Current ply:', ply)
             return float('inf'), (-1, -1)
         elif game.is_loser(self):
             # self.game_depths.append(ply)
-            # if self.iterative and (self._starting_ply <= 3 or ply - self._starting_ply >= 15):
-            #     print('Leaf node. Starting ply:', self._starting_ply, 'Current ply:', ply)
             return float('-inf'), (-1, -1)
         elif depth == 0:
-            score = self._eval(game, depth)  # _eval wraps self.score and optionally performs Monte Carlo rollouts.
+            score = self._eval(game, depth)
+            # _eval wraps self.score and optionally performs Monte Carlo rollouts.
             return score, (-1, -1)
 
+        # See if equivalent board has already been scored:
         symmetry_score = self._check_symmetries(game, depth)
-
         if symmetry_score is not None and alpha < symmetry_score <= beta:
             return symmetry_score, (-1, -1)
-        elif maximizing_player:
-            val = float('-inf')
-            best_move = (-1, -1)
+
+        # Continue Alpha-Beta search:
+        if maximizing_player:
+            val, best_move, new_depth, m_player = float('-inf'), (-1, -1), depth-1, (not maximizing_player)
 
             for m in game.get_legal_moves():
-                v = max(val, self.alphabeta(game.forecast_move(m), depth-1, alpha, beta, not maximizing_player)[0])
-                best_move = best_move if v == val else m
-                val = v
+                old_val = val
+                val = max(val, self.alphabeta(game.forecast_move(m), new_depth, alpha, beta, m_player)[0])
+                best_move = best_move if val == old_val else m
                 # n_legal_moves -= 1
 
                 if val >= beta:
@@ -341,18 +341,16 @@ class CustomPlayer:
 
                 alpha = max(alpha, val)
 
-            # assert n_legal_moves == 0
             # self.ab_pruning_by_ply[ply].append(n_legal_moves)
             self._cache_move(game, val, depth)
             return (val, best_move)
         else:
-            val = float('inf')
-            best_move = (-1, -1)
+            val, best_move, new_depth, m_player = float('inf'), (-1, -1), depth-1, (not maximizing_player)
 
             for m in game.get_legal_moves():
-                v = min(val, self.alphabeta(game.forecast_move(m), depth-1, alpha, beta, not maximizing_player)[0])
-                best_move = best_move if v == val else m
-                val = v
+                old_val = val
+                val = min(val, self.alphabeta(game.forecast_move(m), new_depth, alpha, beta, m_player)[0])
+                best_move = best_move if val == old_val else m
                 # n_legal_moves -= 1
 
                 if val <= alpha:
@@ -362,7 +360,6 @@ class CustomPlayer:
 
                 beta = min(beta, val)
 
-            # assert n_legal_moves == 0
             # self.ab_pruning_by_ply[ply].append(n_legal_moves)
             self._cache_move(game, val, depth)
             return (val, best_move)

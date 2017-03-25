@@ -3,7 +3,7 @@ from collections import deque
 
 ### Heuristics
 
-def improved_score_depth_n(game, player, max_depth=2):
+def improved_score_depth_n(game, player, max_depth=5):
     """Like the improved-score heuristic, except that it considers not just
     the immediate squares available to a player but also the squares that are
     one, two, ..., max_depth moves away from the player.
@@ -55,10 +55,41 @@ def improved_score_depth_n(game, player, max_depth=2):
     return float(_bfs_score(player) - _bfs_score(game.get_opponent(player)))
 
 
-def who_can_get_there_first(game, player, max_depth=4):
-    """Similar in spirit to improved_score_depth_n. However, if a player can
-    get to a square first in the breadth-first search, then that square cannot
-    count as an open square for the opponent.
+def who_can_get_there_first(game, player):
+    """Similar to the improved_score function. However, the active player's
+    (the player with the next move) open moves cannot count towards the
+    inactive player's open moves. It's as if the active player can take those
+    squares first and block the inactive player from moving to them.
+
+    Parameters
+    ----------
+    game : `isolation.Board`
+        An instance of `isolation.Board` encoding the current state of the
+        game (e.g., player locations and blocked cells).
+
+    player : hashable
+        One of the objects registered by the game object as a valid player.
+        (i.e., `player` should be either game.__player_1__ or
+        game.__player_2__).
+
+    Returns
+    ----------
+    float
+        The heuristic value of the current game state
+    """
+    active_moves = game.get_legal_moves(game.active_player)
+    inactive_moves = [m for m in game.get_legal_moves(game.inactive_player) if m not in active_moves]
+
+    own_moves = active_moves if player is game.active_player else inactive_moves
+    opp_moves = inactive_moves if own_moves is active_moves else active_moves
+
+    return float(len(own_moves) - len(opp_moves))
+
+
+def who_can_get_there_first_depth_n(game, player, max_depth=5):
+    """Similar in spirit to improved_score_depth_n and who_can_get_there_first.
+    If a player can get to a square first in the breadth-first search, then
+    that square cannot count as an open square for the opponent.
 
     This is how we determine who can get to a square first: a breadth-first
     search is conducted, where the active player (the one who has the next
@@ -136,49 +167,42 @@ def bfs_max_depth_heuristic(game, player):
     return float(_max_depth(player) - _max_depth(game.get_opponent(player)))
 
 
-def bfs_open_moves_with_blocking_heuristic(game, player, bfs_depth=5):
-    """Similar to who_can_get_there_first but more complicated and less
-    effective.
+def dfs_max_depth_heuristic(game, player):
+    """Like bfs_max_depth_heuristic but uses depth-first search instead of
+    breadth-first, measuring the longest unobstructed path that each player
+    has. Returns the difference of these lengths.
 
-    It only allows the active player to block the inactive player, whereas
-    who_can_get_there_first allows each player to block the other.
+    Parameters
+    ----------
+    game : `isolation.Board`
+        An instance of `isolation.Board` encoding the current state of the
+        game (e.g., player locations and blocked cells).
 
-    It was the first iteration on what eventually led to who_can_get_there_first.
+    player : hashable
+        One of the objects registered by the game object as a valid player.
+        (i.e., `player` should be either game.__player_1__ or
+        game.__player_2__).
+
+    Returns
+    ----------
+    float
+        The heuristic value of the current game state
     """
-    active_player, inactive_player = game.active_player, game.inactive_player
+    def _max_depth(p, move=None):
+        if move not in available:
+            return 0
+
+        move = move or game.get_player_location(p)
+        available.discard(move)
+        return 1 + max(_max_depth(p, m) for m in _moves(move, available))
+
     available = set(game.get_blank_spaces())
-    inf = float('inf')
+    own_max_depth = _max_depth(player)
 
-    # BFS for active_player (first mover).
-    active_player_score = 0
-    active_player_visited = {}  # location: depth
-    q = deque([ (game.get_player_location(active_player), 0) ])  # (location, depth)
-    while q:
-        loc, depth = q.popleft()
-        if depth <= bfs_depth and loc not in active_player_visited:
-            active_player_visited[loc] = depth
-            active_player_score += depth
-            for loc2 in _moves(loc, available):
-                if loc2 not in active_player_visited:
-                    q.append((loc2, depth+1))
+    available = set(game.get_blank_spaces())
+    opp_max_depth = _max_depth(game.get_opponent(player))
 
-    # BFS for inactive_player (second mover).
-    inactive_player_score = 0
-    inactive_player_visited = {}  # location: depth
-    q = deque([ (game.get_player_location(inactive_player), 0) ])
-    while q:
-        loc, depth = q.popleft()
-        if depth <= bfs_depth and loc not in inactive_player_visited and depth < active_player_visited.get(loc, inf):
-            inactive_player_visited[loc] = depth
-            inactive_player_score += depth
-            for loc2 in _moves(loc, available):
-                if loc2 not in inactive_player_visited:
-                    q.append((loc2, depth+1))
-
-    if player is active_player:
-        return float(active_player_score - inactive_player_score)
-    else:
-        return float(inactive_player_score - active_player_score)
+    return float(own_max_depth - opp_max_depth)
 
 
 ### Utilities
@@ -270,3 +294,49 @@ def _interleaved_bfs_depth_n(game, max_depth=4):
                     q.append((loc2, weight, depth+1))
 
     return score
+
+
+
+# def bfs_open_moves_with_blocking_heuristic(game, player, bfs_depth=5):
+#     """Similar to who_can_get_there_first but more complicated and less
+#     effective.
+
+#     It only allows the active player to block the inactive player, whereas
+#     who_can_get_there_first allows each player to block the other.
+
+#     It was the first iteration on what eventually led to who_can_get_there_first.
+#     """
+#     active_player, inactive_player = game.active_player, game.inactive_player
+#     available = set(game.get_blank_spaces())
+#     inf = float('inf')
+
+#     # BFS for active_player (first mover).
+#     active_player_score = 0
+#     active_player_visited = {}  # location: depth
+#     q = deque([ (game.get_player_location(active_player), 0) ])  # (location, depth)
+#     while q:
+#         loc, depth = q.popleft()
+#         if depth <= bfs_depth and loc not in active_player_visited:
+#             active_player_visited[loc] = depth
+#             active_player_score += depth
+#             for loc2 in _moves(loc, available):
+#                 if loc2 not in active_player_visited:
+#                     q.append((loc2, depth+1))
+
+#     # BFS for inactive_player (second mover).
+#     inactive_player_score = 0
+#     inactive_player_visited = {}  # location: depth
+#     q = deque([ (game.get_player_location(inactive_player), 0) ])
+#     while q:
+#         loc, depth = q.popleft()
+#         if depth <= bfs_depth and loc not in inactive_player_visited and depth < active_player_visited.get(loc, inf):
+#             inactive_player_visited[loc] = depth
+#             inactive_player_score += depth
+#             for loc2 in _moves(loc, available):
+#                 if loc2 not in inactive_player_visited:
+#                     q.append((loc2, depth+1))
+
+#     if player is active_player:
+#         return float(active_player_score - inactive_player_score)
+#     else:
+#         return float(inactive_player_score - active_player_score)
