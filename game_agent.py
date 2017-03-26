@@ -138,6 +138,7 @@ class CustomPlayer:
         # self.monte_carlo_scores_by_ply = defaultdict(lambda: defaultdict(int))
         # self.scores_by_ply = defaultdict(lambda: defaultdict(int))
         # self.search_depths = defaultdict(int)
+        # self.rollout_depths = defaultdict(int)
 
     def get_move(self, game, legal_moves, time_left):
         """Search for the best move from the available legal moves and return a
@@ -491,12 +492,17 @@ class CustomPlayer:
         int
             1 is self wins; otherwise, -1.
         """
+        # depth = 0
+
         while True:
             if game.is_winner(self):
+                # self.rollout_depths[depth] += 1
                 return 1
             elif game.is_loser(self):
+                # self.rollout_depths[depth] += 1
                 return -1
 
+            # depth += 1
             move = random.choice(game.get_legal_moves())  # Random legal move for active player.
             game.apply_move(move)  # Applies move to board and changes active player.
 
@@ -629,6 +635,10 @@ class CustomPlayer:
     # def show_stats(self):
     #     if not self._show_stats:
     #         return None
+
+    #     print('Rollout depths reached:')
+    #     for depth,count in sorted(self.rollout_depths.items()):
+    #         print('    Depth:', depth, 'Count:', count)
 
     #     print('Search depths reached:')
     #     for depth,count in sorted(self.search_depths.items()):

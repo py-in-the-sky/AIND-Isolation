@@ -30,6 +30,26 @@ Game depth: Avg: 30.470345345345347 Min: 8 Max: 44
 Game depth: Avg: 30.16699499924231 Min: 8 Max: 42
 Game depth: Avg: 30.130783607603593 Min: 7 Max: 43
 
+Rollout depths reached:
+    Depth: 1 Count: 63137
+    Depth: 2 Count: 52817
+    Depth: 3 Count: 40762
+    Depth: 4 Count: 25377
+    Depth: 5 Count: 20304
+    Depth: 6 Count: 14792
+    Depth: 7 Count: 9899
+    Depth: 8 Count: 6095
+    Depth: 9 Count: 4483
+    Depth: 10 Count: 2804
+    Depth: 11 Count: 1452
+    Depth: 12 Count: 775
+    Depth: 13 Count: 417
+    Depth: 14 Count: 170
+    Depth: 15 Count: 54
+    Depth: 16 Count: 12
+    Depth: 17 Count: 8
+    Depth: 18 Count: 4
+
 Search depths reached:
     Depth: 3 Count: 1
     Depth: 4 Count: 5
