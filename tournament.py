@@ -161,7 +161,8 @@ def main():
     random_agents = [Agent(RandomPlayer(), "Random")]
     student_agents = [Agent(CustomPlayer(score_fn=custom_score, **CUSTOM_ARGS), "Student_2"),
                       Agent(CustomPlayer(score_fn=custom_score, use_rollouts=True, **CUSTOM_ARGS), "StudentRollouts_2"),
-                      Agent(CustomPlayer(score_fn=custom_score, use_rollouts=True, use_symmetries=True, symmetry_threshold=3, **CUSTOM_ARGS), "SuperStudent_2")]
+                      # Agent(CustomPlayer(score_fn=custom_score, use_rollouts=True, use_symmetries=True, symmetry_threshold=3, try_reflection=True, **CUSTOM_ARGS), "SuperStudent_2")
+                      ]
     id_improved_agents = [Agent(CustomPlayer(score_fn=improved_score, **CUSTOM_ARGS), "ID_Improved_2")]
 
     # ID_Improved agent is used for comparison to the performance of the
@@ -173,7 +174,7 @@ def main():
                    Agent(CustomPlayer(score_fn=improved_score, **CUSTOM_ARGS), "ID_Improved"),
                    Agent(CustomPlayer(score_fn=custom_score, **CUSTOM_ARGS), "Student"),
                    Agent(CustomPlayer(score_fn=custom_score, use_rollouts=True, **CUSTOM_ARGS), "StudentRollouts"),
-                   Agent(CustomPlayer(score_fn=custom_score, use_rollouts=True, use_symmetries=True, **CUSTOM_ARGS), "SuperStudent"),
+                   # Agent(CustomPlayer(score_fn=custom_score, use_rollouts=True, use_symmetries=True, try_reflection=True, **CUSTOM_ARGS), "SuperStudent"),
                    ]
 
     print(DESCRIPTION)
@@ -183,8 +184,8 @@ def main():
         print("{:^25}".format("Evaluating: " + agentUT.name))
         print("*************************")
 
-        # agents = random_agents + mm_agents + ab_agents + [agentUT]
-        agents = id_improved_agents + student_agents + [agentUT]
+        agents = random_agents + mm_agents + ab_agents + [agentUT]
+        # agents = id_improved_agents + student_agents + [agentUT]
         win_ratio = play_round(agents, NUM_MATCHES)
 
         print("\n\nResults:")
